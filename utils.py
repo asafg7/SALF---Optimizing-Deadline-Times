@@ -58,7 +58,7 @@ class IOStream:
 
     def cprint(self, text):
         print(text)
-        self.f.write(text + '\n')
+        # self.f.write(text + '\n')
         self.f.flush()
 
     def close(self):

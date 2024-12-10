@@ -26,6 +26,29 @@ if __name__ == '__main__':
     train_data, test_loader = utils.data(args)
     input, output, train_data, val_loader = utils.data_split(train_data, len(test_loader.dataset), args)
 
+    iteration_times = [5.41064731, 5.15053798, 4.95472401, 4.79550987, 4.65995312, 4.54133918, 4.43547337, 4.33961966,
+                       4.25189944,
+                       4.17095886, 4.0957838, 4.02557874, 3.95971898, 3.89770171, 3.83910947, 3.78360423, 3.73088964,
+                       3.6807262,
+                       3.63289828, 3.58721885, 3.54352307, 3.50166861, 3.46152374, 3.42297317, 3.38591401, 3.35024897,
+                       3.31589316,
+                       3.28276694, 3.2507989, 3.21992181, 3.19008009, 3.16121029, 3.13326626, 3.10619866, 3.07996393,
+                       3.05451965, 3.02982817, 3.00585242, 2.98255968, 2.95992207, 2.93790484, 2.9164837, 2.89563247,
+                       2.87532615,
+                       2.85554381, 2.83626051, 2.81745968, 2.79912029, 2.78122049, 2.76375202, 2.74668942, 2.73002226,
+                       2.71373344,
+                       2.69781185, 2.68224106, 2.66700879, 2.65210605, 2.63751759, 2.62323477, 2.60924905, 2.59554489,
+                       2.58211965, 2.56895676, 2.5560547, 2.54339875, 2.53098442, 2.51880645, 2.50685431, 2.49512092,
+                       2.48360191,
+                       2.47229035, 2.46117754, 2.45025881, 2.43953178, 2.4289852, 2.41861872, 2.4084251, 2.39839921,
+                       2.38854284, 2.37884042, 2.36929399, 2.35989816, 2.35065297, 2.34154846, 2.33258576, 2.32375555,
+                       2.31506018,
+                       2.30649406, 2.29805273, 2.289735, 2.281539868, 2.273458672, 2.265490994, 2.25763946, 2.24989390,
+                       2.24225569,
+                       2.23471975, 2.2272895, 2.2199552946, 2.212719668]
+    iteration_times = np.ones(100)*3
+
+
     # model
     if args.model == 'mlp':
         global_model = models.FC2Layer(input, output)
@@ -91,6 +114,18 @@ if __name__ == '__main__':
                 user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
                 user_new_state_dict.update(user_updated_layers)
                 user['model'].load_state_dict(user_new_state_dict)
+
+            if (args.stragglers == 'opt_salf') & (user_idx in stragglers_idx):
+                user_new_state_dict = copy.deepcopy(global_model).state_dict()
+                if args.up_to_layer is not None:
+                    up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
+                else:
+
+                    up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]) + 1, num_of_layers)
+                user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
+                user_new_state_dict.update(user_updated_layers)
+                user['model'].load_state_dict(user_new_state_dict)
+
             try:
                 users_loss.append(mean(user_loss))
             except:

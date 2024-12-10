@@ -23,7 +23,7 @@ def args_parser():
     parser.add_argument('--exp_name', type=str, default='exp',
                         help="the name of the current experiment")
     parser.add_argument('--stragglers', type=none_or_str, default='salf',
-                        choices=['salf', 'drop', None],
+                        choices=['salf', 'drop', None, 'opt_salf'],
                         help="whether the FL is stragglers aware")
     parser.add_argument('--stragglers_percent', type=float_or_str, default=0.9,
                         help="the percent of percent out of the edge users")
