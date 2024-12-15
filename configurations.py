@@ -23,9 +23,9 @@ def args_parser():
     parser.add_argument('--exp_name', type=str, default='exp',
                         help="the name of the current experiment")
     parser.add_argument('--stragglers', type=none_or_str, default='salf',
-                        choices=['salf', 'drop', None, 'opt_salf'],
+                        choices=['salf', 'drop', None, 'poisson_salf'],
                         help="whether the FL is stragglers aware")
-    parser.add_argument('--stragglers_percent', type=float_or_str, default=0.9,
+    parser.add_argument('--stragglers_percent', type=float_or_str, default=1,
                         help="the percent of percent out of the edge users")
     parser.add_argument('--up_to_layer', type=int_or_str, default=None,
                         help="if 'None' - choose randomly, else - update until (num_layers - up_to_layer)"
@@ -70,6 +70,25 @@ def args_parser():
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
+    parser.add_argument('--monte_carlo_iterations', type=int, default=100,
+                        help="number of iterations for model training")
+
+    parser.add_argument('--deadline_times', type=str, default='optimal',
+                        help="weather to perform optimization to deadline time")
+    parser.add_argument('--t_max', type=int, default=300,
+                        help="maximal training time for the modified SALF")
+    parser.add_argument('--g', type=int, default=0.5,
+                        help="gradient bound")
+    parser.add_argument('--rho_s', type=int, default=1e-3,
+                        help="smoothness constant")
+    parser.add_argument('--rho_c', type=int, default=1e-0,
+                        help="strong convexity constant")
+    parser.add_argument('--gamma', type=int, default=1,
+                        help="heterogeneity gap")
+    parser.add_argument('--t_min', type=int, default=0.5,
+                        help="iteration minimum time")
+    parser.add_argument('--num_layers', type=int, default=6,
+                        help="iteration minimum time")
 
     args = parser.parse_args()
     return args
