@@ -27,9 +27,24 @@ if __name__ == '__main__':
     train_data, test_loader = utils.data(args)
     input, output, train_data, val_loader = utils.data_split(train_data, len(test_loader.dataset), args)
 
+    if args.model == 'mlp':
+        num_layers = 6
+    else:
+        num_layers = 8
+
     if args.deadline_times == "optimal":
-        iteration_times = get_optimal_deadlines(args.num_users, args.num_layers, args.global_epochs, args.t_max,
-                                                args.g, args.rho_s, args.rho_c, args.gamma, args.t_min)
+
+        iters = np.arange(1, args.global_epochs + 1)
+        kappa = args.rho_s / args.rho_c
+        l_gamma = np.max((8 * kappa, 1)) - 1
+
+        if args.lr_decay == "fixed":
+            etta = args.lr * np.ones(np.size(iters))
+        elif args.lr_decay == "lin_decay":
+            etta = 1 / (args.rho_c * (iters + l_gamma))
+        iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
+                                                args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
+
     else:
         iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
     np.save(f'checkpoints/{args.exp_name}/iteration_times.npy', iteration_times)
@@ -87,7 +102,7 @@ if __name__ == '__main__':
                 user_loss = []
                 for local_epoch in range(0, args.local_epochs):
                     user = local_models[user_idx]
-                    train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'],
+                    train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'], user['scheduler'],
                                                        train_creterion, args.device, args.local_iterations)
                     user_loss.append(train_loss)
 
@@ -107,7 +122,7 @@ if __name__ == '__main__':
                     if args.up_to_layer is not None:
                         up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
                     else:
-                        up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]) + 1, num_of_layers)
+                        up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]*5/3) + 1, num_of_layers)
 
                     user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
                     user_new_state_dict.update(user_updated_layers)

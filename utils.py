@@ -34,6 +34,10 @@ def federated_setup(global_model, train_data, args):
     indexes = torch.randperm(len(train_data))
     user_data_len = math.floor(len(train_data) / args.num_users) if args.num_samples == None else args.num_samples
     local_models = {}
+    if args.lr_decay == "fixed":
+        lambda_func = lambda epoch: args.lr
+    elif args.lr_decay == "lin_decay":
+        lambda_func = lambda epoch: 2 / (1 + 0.5*epoch)
     for user_idx in range(args.num_users):
         user = {'data': torch.utils.data.DataLoader(
             torch.utils.data.Subset(train_data,
@@ -43,6 +47,7 @@ def federated_setup(global_model, train_data, args):
         user['opt'] = optim.SGD(user['model'].parameters(), lr=args.lr,
                                 momentum=args.momentum) if args.optimizer == 'sgd' \
             else optim.Adam(user['model'].parameters(), lr=args.lr)
+        user['scheduler'] = optim.lr_scheduler.LambdaLR(user['opt'], lr_lambda=lambda_func)
         local_models[user_idx] = user
     return local_models
 
@@ -129,7 +134,7 @@ def data_split(data, amount, args):
     return input, output, train_data, val_loader
 
 
-def train_one_epoch(train_loader, model, optimizer,
+def train_one_epoch(train_loader, model, optimizer, scheduler,
                     creterion, device, iterations):
     model.train()
     losses = []
@@ -145,6 +150,7 @@ def train_one_epoch(train_loader, model, optimizer,
         loss.backward()
         start = time.time()
         optimizer.step()
+        scheduler.step()
         nat = (time.time() - start) / 60
 
         losses.append(loss.item())
