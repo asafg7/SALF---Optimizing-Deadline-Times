@@ -11,7 +11,7 @@ import numpy as np
 from torch import optim
 from statistics import mean
 from torchvision import datasets, transforms
-
+from deadline_backpropagation import DeadlineConstrainedModel
 
 def FedAvg(local_models, global_model):
     state_dict = global_model.state_dict()
@@ -43,6 +43,7 @@ def federated_setup(global_model, train_data, args):
         user['opt'] = optim.SGD(user['model'].parameters(), lr=args.lr,
                                 momentum=args.momentum) if args.optimizer == 'sgd' \
             else optim.Adam(user['model'].parameters(), lr=args.lr)
+        user['enf'] = DeadlineConstrainedModel(user['model'])
         local_models[user_idx] = user
     return local_models
 
@@ -129,8 +130,8 @@ def data_split(data, amount, args):
     return input, output, train_data, val_loader
 
 
-def train_one_epoch(train_loader, model, optimizer,
-                    creterion, device, iterations):
+def train_one_epoch(train_loader, model, optimizer, deadline_enforcer,
+                    creterion, device, iterations, deadline, time_list):
     model.train()
     losses = []
     if iterations is not None:
@@ -142,10 +143,13 @@ def train_one_epoch(train_loader, model, optimizer,
         loss = creterion(output, label)
 
         optimizer.zero_grad()
-        loss.backward()
+
+        deadline_enforcer.set_start_time(deadline)
         start = time.time()
+        loss.backward()
+        back_prop_time = (time.time() - start)
+        time_list.append(back_prop_time)
         optimizer.step()
-        nat = (time.time() - start) / 60
 
         losses.append(loss.item())
 

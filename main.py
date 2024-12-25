@@ -16,8 +16,11 @@ from configurations import args_parser
 import utils
 import models
 from optimal_deadlines import get_optimal_deadlines
+import statistics
+from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
+    time_list = []
     start_time = time.time()
     args = args_parser()
     textio, best_val_acc, path_best_model = utils.initializations(args)
@@ -87,10 +90,10 @@ if __name__ == '__main__':
                 user_loss = []
                 for local_epoch in range(0, args.local_epochs):
                     user = local_models[user_idx]
-                    train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'],
-                                                       train_creterion, args.device, args.local_iterations)
+                    train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'], user['enf'],
+                                                       train_creterion, args.device, args.local_iterations,
+                                                       iteration_times[global_epoch], time_list)
                     user_loss.append(train_loss)
-
                 if (args.stragglers == 'salf') & (user_idx in stragglers_idx):
                     user_new_state_dict = copy.deepcopy(global_model).state_dict()
                     if args.up_to_layer is not None:
@@ -121,6 +124,7 @@ if __name__ == '__main__':
                 train_loss = mean(users_loss)
             except:
                 train_loss = 0
+            print(f"Mean: {statistics.mean(time_list)}, STD: {statistics.stdev(time_list)}", )
             utils.FedAvg(local_models, global_model)
 
             val_acc = utils.test(val_loader, global_model, test_creterion, args.device)
@@ -134,6 +138,17 @@ if __name__ == '__main__':
                 torch.save(global_model.state_dict(), path_best_model)
 
             textio.cprint(f'epoch: {global_epoch} | train_loss: {train_loss:.2f} | val_acc: {val_acc:.0f}%')
+
+        # Plotting a basic histogram
+        plt.hist(time_list, bins=30, color='skyblue', edgecolor='black')
+
+        # Adding labels and title
+        plt.xlabel('VGG backward pass time')
+        plt.ylabel('Counts')
+        plt.title('VGG backward pass histogram')
+
+        # Display the plot
+        plt.show()
 
         mean_loss = np.mean(train_loss_mat, axis=0)
         mean_val_acc = np.mean(val_acc_mat, axis=0)

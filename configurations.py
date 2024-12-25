@@ -39,7 +39,7 @@ def args_parser():
                         help="model arcitecture to be used")
     parser.add_argument('--lr', type=float, default=0.1,
                         help="learning rate")
-    parser.add_argument('--global_epochs', type=int, default=100,
+    parser.add_argument('--global_epochs', type=int, default=20,
                         help="number of global epochs")
     parser.add_argument('--device', type=str, default='cuda:0',
                         choices=['cuda:0', 'cuda:1', 'cpu'],
@@ -49,7 +49,7 @@ def args_parser():
                         help="number of samples per user; if 'None' - uniformly distribute all data among all users)")
     parser.add_argument('--num_users', type=int, default=30,
                         help="number of users participating in the federated learning")
-    parser.add_argument('--train_batch_size', type=int, default=16,
+    parser.add_argument('--train_batch_size', type=int, default=64,
                         help="trainset batch size")
     parser.add_argument('--local_iterations', type=int, default=1,
                         help="number of local iterations instead of local epoch")
@@ -70,12 +70,12 @@ def args_parser():
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=100,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=1,
                         help="number of iterations for model training")
 
     parser.add_argument('--deadline_times', type=str, default='optimal',
                         help="weather to perform optimization to deadline time")
-    parser.add_argument('--t_max', type=int, default=300,
+    parser.add_argument('--t_max', type=int, default=400,
                         help="maximal training time for the modified SALF")
     parser.add_argument('--g', type=int, default=0.5,
                         help="gradient bound")
