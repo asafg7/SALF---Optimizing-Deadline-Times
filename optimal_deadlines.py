@@ -27,6 +27,8 @@ def opt_function_deadlines(t, etta, g, u, l, rho_c, b, d1):
     for i in range(num_iter):
         ex_mult[i] = (etta[i] ** 2)*np.prod(1-rho_c*etta[i+1:])
     c_t = (g**2)*(4*u)/(u-1)*p_sum
+    A = np.prod(1-rho_c*etta)*d1
+    B = np.sum(ex_mult*(b+c_t))
     f = np.prod(1-rho_c*etta)*d1 + np.sum(ex_mult*(b+c_t))
     return f
 
@@ -48,28 +50,40 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
     t_opt = x
     optimal_val = opt_function_deadlines(x, etta, g, u, l, rho_c, b, d1)
 
-    print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
+    '''print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
 
     plt.plot(range(num_iter), t0, range(num_iter), t_opt)
     plt.legend(['Trivial Allocation', 'Optimal Allocation'])
     plt.title('Iteration Time Allocation')
-    plt.show()
+    plt.show()'''
 
     return t_opt
 
 def main():
-    u = 6
+    u = 15
     l = 6
-    num_iter = 100
-    t_max = 300
+    num_iter = 300
+    t_max = 900
     g = 1
-    rho_s = 1e-1
-    rho_c = 1e-1
+    rho_s = 3e-2
+    rho_c = 1e-2
     gamma = 1
     t_min = 0.5
     iters = np.arange(1, num_iter + 1)
     kappa = rho_s / rho_c
     l_gamma = np.max((8 * kappa, 1)) - 1
+
+    # decaying 1 / t + l_gamma
+    etta = 1 / (rho_c * (iters + l_gamma))
+    iteration_times_decay_lin1 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
+
+    # decaying 1 / t + l_gamma
+    etta = 1 / (rho_c * (iters + l_gamma))
+    iteration_times_decay_lin1 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
+
+    # decaying 1 / t + l_gamma
+    etta = 1 / (rho_c * (iters + l_gamma))
+    iteration_times_decay_lin1 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
 
     # decaying 1 / t + l_gamma
     etta = 1 / (rho_c * (iters + l_gamma))

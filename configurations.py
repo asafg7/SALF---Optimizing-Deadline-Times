@@ -22,7 +22,7 @@ def args_parser():
 
     parser.add_argument('--exp_name', type=str, default='exp',
                         help="the name of the current experiment")
-    parser.add_argument('--stragglers', type=none_or_str, default='salf',
+    parser.add_argument('--stragglers', type=none_or_str, default='poisson_salf',
                         choices=['salf', 'drop', None, 'poisson_salf'],
                         help="whether the FL is stragglers aware")
     parser.add_argument('--stragglers_percent', type=float_or_str, default=1,
@@ -30,26 +30,21 @@ def args_parser():
     parser.add_argument('--up_to_layer', type=int_or_str, default=None,
                         help="if 'None' - choose randomly, else - update until (num_layers - up_to_layer)"
                              "example: up_to_layer=1 results with an update up to one before the first layer")
-
     parser.add_argument('--data', type=str, default='mnist',
                         choices=['mnist', 'cifar10'],
                         help="dataset to use (mnist or cifar)")
     parser.add_argument('--model', type=str, default='cnn2',
                         choices=['mlp', 'cnn2', 'VGG11', 'VGG13', 'VGG16', 'VGG19'],
                         help="model arcitecture to be used")
-    parser.add_argument('--lr', type=float, default=0.1,
-                        help="learning rate")
-    parser.add_argument('--global_epochs', type=int, default=200,
-                        help="number of global epochs")
-    parser.add_argument('--device', type=str, default='cuda:0',
+    parser.add_argument('--device', type=str, default='cpu',
                         choices=['cuda:0', 'cuda:1', 'cpu'],
                         help="device to use (gpu or cpu)")
 
     parser.add_argument('--num_samples', type=int, default=None,
                         help="number of samples per user; if 'None' - uniformly distribute all data among all users)")
-    parser.add_argument('--num_users', type=int, default=30,
+    parser.add_argument('--num_users', type=int, default=15,
                         help="number of users participating in the federated learning")
-    parser.add_argument('--train_batch_size', type=int, default=128,
+    parser.add_argument('--train_batch_size', type=int, default=64,
                         help="trainset batch size")
     parser.add_argument('--local_iterations', type=int, default=1,
                         help="number of local iterations instead of local epoch")
@@ -70,18 +65,20 @@ def args_parser():
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=50,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=10,
                         help="number of iterations for model training")
 
     parser.add_argument('--deadline_times', type=str, default='optimal',
                         help="weather to perform optimization to deadline time")
-    parser.add_argument('--t_max', type=int, default=600,
+    parser.add_argument('--global_epochs', type=int, default=300,
+                        help="number of global epochs")
+    parser.add_argument('--t_max', type=int, default=900,
                         help="maximal training time for the modified SALF")
     parser.add_argument('--g', type=int, default=1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=1e-1,
+    parser.add_argument('--rho_s', type=int, default=9e-2,
                         help="smoothness constant")
-    parser.add_argument('--rho_c', type=int, default=1e-1,
+    parser.add_argument('--rho_c', type=int, default=3e-2,
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=int, default=1,
                         help="heterogeneity gap")
@@ -89,6 +86,8 @@ def args_parser():
                         help="iteration minimum time")
     parser.add_argument('--lr_decay', type=str, default="fixed",
                         help="learning rate decay")
+    parser.add_argument('--lr', type=float, default=0.1,
+                        help="learning rate")
 
     args = parser.parse_args()
     return args

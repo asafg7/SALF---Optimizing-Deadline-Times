@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
         if args.lr_decay == "fixed":
             etta = args.lr * np.ones(np.size(iters))
-        elif args.lr_decay == "lin_decay":
+        elif args.lr_decay == "inverse":
             etta = 1 / (args.rho_c * (iters + l_gamma))
         iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
                                                 args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
@@ -122,7 +122,7 @@ if __name__ == '__main__':
                     if args.up_to_layer is not None:
                         up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
                     else:
-                        up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]*5/3) + 1, num_of_layers)
+                        up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]) + 1, num_of_layers)
 
                     user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
                     user_new_state_dict.update(user_updated_layers)
@@ -154,7 +154,7 @@ if __name__ == '__main__':
         mean_val_acc = np.mean(val_acc_mat, axis=0)
         np.save(f'checkpoints/{args.exp_name}/train_loss_list.npy', mean_loss)
         np.save(f'checkpoints/{args.exp_name}/val_acc_list.npy', mean_val_acc)
-
+        np.save(f'checkpoints/{args.exp_name}/args.npy', args)
 
         elapsed_min = (time.time() - start_time) / 60
         textio.cprint(f'total execution time: {elapsed_min:.0f} min')
