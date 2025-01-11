@@ -42,6 +42,8 @@ if __name__ == '__main__':
             etta = args.lr * np.ones(np.size(iters))
         elif args.lr_decay == "inverse":
             etta = 1 / (args.rho_c * (iters + l_gamma))
+        elif args.lr_decay == "sqrt":
+            etta = 1 / (args.rho_c * (np.sqrt(iters) + l_gamma))
         iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
                                                 args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
 

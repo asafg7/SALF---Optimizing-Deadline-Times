@@ -70,15 +70,15 @@ def args_parser():
 
     parser.add_argument('--deadline_times', type=str, default='optimal',
                         help="weather to perform optimization to deadline time")
-    parser.add_argument('--global_epochs', type=int, default=300,
+    parser.add_argument('--global_epochs', type=int, default=200,
                         help="number of global epochs")
-    parser.add_argument('--t_max', type=int, default=900,
+    parser.add_argument('--t_max', type=int, default=600,
                         help="maximal training time for the modified SALF")
     parser.add_argument('--g', type=int, default=1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=9e-2,
+    parser.add_argument('--rho_s', type=int, default=0.3,
                         help="smoothness constant")
-    parser.add_argument('--rho_c', type=int, default=3e-2,
+    parser.add_argument('--rho_c', type=int, default=0.1,
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=int, default=1,
                         help="heterogeneity gap")

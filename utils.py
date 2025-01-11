@@ -38,6 +38,8 @@ def federated_setup(global_model, train_data, args):
         lambda_func = lambda epoch: args.lr
     elif args.lr_decay == "inverse":
         lambda_func = lambda epoch: 1 / (args.rho_c * (epoch + np.max((8 * args.rho_s / args.rho_c, 1)) - 1))
+    elif args.lr_decay == "sqrt":
+        lambda_func = lambda epoch: 1 / (args.rho_c * (np.sqrt(epoch) + np.max((8 * args.rho_s / args.rho_c, 1)) - 1))
     for user_idx in range(args.num_users):
         user = {'data': torch.utils.data.DataLoader(
             torch.utils.data.Subset(train_data,
@@ -85,7 +87,7 @@ def initializations(args):
         os.makedirs('checkpoints/' + args.exp_name)
     textio = IOStream('checkpoints/' + args.exp_name + '/run.log')
 
-    best_val_acc = np.NINF
+    best_val_acc = -np.inf
     path_best_model = 'checkpoints/' + args.exp_name + '/model.best.t7'
 
     return textio, best_val_acc, path_best_model
