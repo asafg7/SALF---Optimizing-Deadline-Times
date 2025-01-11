@@ -32,23 +32,22 @@ if __name__ == '__main__':
     else:
         num_layers = 8
 
-    if args.deadline_times == "optimal":
-
+    if args.deadline_times == "uniform":
+        iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
+    else:
         iters = np.arange(1, args.global_epochs + 1)
         kappa = args.rho_s / args.rho_c
         l_gamma = np.max((8 * kappa, 1)) - 1
 
-        if args.lr_decay == "fixed":
+        if args.deadline_times == "fixed":
             etta = args.lr * np.ones(np.size(iters))
-        elif args.lr_decay == "inverse":
+        elif args.deadline_times == "inverse":
             etta = 1 / (args.rho_c * (iters + l_gamma))
-        elif args.lr_decay == "sqrt":
+        elif args.deadline_times == "sqrt":
             etta = 1 / (args.rho_c * (np.sqrt(iters) + l_gamma))
         iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
                                                 args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
 
-    else:
-        iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
     np.save(f'checkpoints/{args.exp_name}/iteration_times.npy', iteration_times)
 
     N_iterations = args.monte_carlo_iterations

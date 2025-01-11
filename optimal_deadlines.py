@@ -50,22 +50,22 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
     t_opt = x
     optimal_val = opt_function_deadlines(x, etta, g, u, l, rho_c, b, d1)
 
-    '''print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
+    print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
 
     plt.plot(range(num_iter), t0, range(num_iter), t_opt)
     plt.legend(['Trivial Allocation', 'Optimal Allocation'])
     plt.title('Iteration Time Allocation')
-    plt.show()'''
+    plt.show()
 
     return t_opt
 
 def main():
     u = 15
     l = 6
-    num_iter = 300
-    t_max = 900
+    num_iter = 100
+    t_max = 300
     g = 1
-    rho_s = 3e-2
+    rho_s = 1e-2
     rho_c = 1e-2
     gamma = 1
     t_min = 0.5

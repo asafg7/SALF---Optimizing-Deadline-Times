@@ -70,21 +70,23 @@ def args_parser():
 
     parser.add_argument('--deadline_times', type=str, default='optimal',
                         help="weather to perform optimization to deadline time")
-    parser.add_argument('--global_epochs', type=int, default=200,
+    parser.add_argument('--global_epochs', type=int, default=150,
                         help="number of global epochs")
-    parser.add_argument('--t_max', type=int, default=600,
+    parser.add_argument('--t_max', type=int, default=6000,
                         help="maximal training time for the modified SALF")
     parser.add_argument('--g', type=int, default=1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=0.3,
+    parser.add_argument('--rho_s', type=int, default=0.01,
                         help="smoothness constant")
-    parser.add_argument('--rho_c', type=int, default=0.1,
+    parser.add_argument('--rho_c', type=int, default=0.01,
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=int, default=1,
                         help="heterogeneity gap")
     parser.add_argument('--t_min', type=int, default=0.5,
                         help="iteration minimum time")
     parser.add_argument('--lr_decay', type=str, default="fixed",
+                        help="learning rate decay")
+    parser.add_argument('--deadline_allocation', type=str, default="inverse",
                         help="learning rate decay")
     parser.add_argument('--lr', type=float, default=0.1,
                         help="learning rate")

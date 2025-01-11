@@ -3,8 +3,6 @@ import os
 import random
 import time
 
-from matplotlib import pyplot as plt
-from scipy.interpolate import interp1d
 import torch
 import copy
 import numpy as np
@@ -87,7 +85,7 @@ def initializations(args):
         os.makedirs('checkpoints/' + args.exp_name)
     textio = IOStream('checkpoints/' + args.exp_name + '/run.log')
 
-    best_val_acc = -np.inf
+    best_val_acc = np.NINF
     path_best_model = 'checkpoints/' + args.exp_name + '/model.best.t7'
 
     return textio, best_val_acc, path_best_model
@@ -153,7 +151,6 @@ def train_one_epoch(train_loader, model, optimizer, scheduler,
         start = time.time()
         optimizer.step()
         scheduler.step()
-        nat = (time.time() - start) / 60
 
         losses.append(loss.item())
 
