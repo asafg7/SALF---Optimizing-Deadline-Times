@@ -3,6 +3,7 @@ from scipy import special
 from matplotlib import pyplot as plt
 from scipy.optimize import SR1
 import scipy.optimize as opt
+from configurations import args_parser
 
 
 def opt_function_deadlines(t, etta, g, u, l, rho_c, b, d1):
@@ -60,61 +61,27 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
     return t_opt
 
 def main():
-    u = 15
-    l = 6
-    num_iter = 100
-    t_max = 300
-    g = 1
-    rho_s = 1e-2
-    rho_c = 1e-2
-    gamma = 1
-    t_min = 0.5
-    iters = np.arange(1, num_iter + 1)
-    kappa = rho_s / rho_c
+
+    fig, ax = plt.subplots()
+
+    args = args_parser()
+    iters = np.arange(1, args.global_epochs + 1)
+    kappa = args.rho_s / args.rho_c
     l_gamma = np.max((8 * kappa, 1)) - 1
+    num_layers = 8
+    alpha_arr = np.linspace(0.2, 2, 10)
+    for alpha in alpha_arr:
+        etta = 1 / (args.rho_c * (np.power(iters, alpha) + l_gamma))
+        iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
+                                                args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
+        ax.plot(iteration_times, label="alpha: " + "{:.1f}".format(alpha))
 
-    # decaying 1 / t + l_gamma
-    etta = 1 / (rho_c * (iters + l_gamma))
-    iteration_times_decay_lin1 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # decaying 1 / t + l_gamma
-    etta = 1 / (rho_c * (iters + l_gamma))
-    iteration_times_decay_lin1 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # decaying 1 / t + l_gamma
-    etta = 1 / (rho_c * (iters + l_gamma))
-    iteration_times_decay_lin1 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # decaying 1 / t + l_gamma
-    etta = 1 / (rho_c * (iters + l_gamma))
-    iteration_times_decay_lin1 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # decaying 1 / 2(t* + l_gamma)
-    etta = 2 / (rho_c * (iters + l_gamma))
-    iteration_times_decay_lin2 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # decaying 1 / 2(t* + l_gamma)
-    etta = 2 / (rho_c * (0.1*iters + l_gamma))
-    iteration_times_decay_lin3 = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # decaying 1 / 2(t^0.5 * + l_gamma)
-    etta = 1 / (2*rho_c * (np.sqrt(iters) + l_gamma))
-    iteration_times_decay_sqrt = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # decaying every 20 epochs
-    etta = np.concatenate((np.ones(20), 0.7*np.ones(20), (0.7**2)*np.ones(20),
-                          (0.7**3)*np.ones(20), (0.7**4)*np.ones(20))).reshape(-1, 1)
-    iteration_times_decay_con = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    # uniform
-    etta = 0.1*np.ones(np.size(iters))
-    iteration_times_uniform = get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta)
-
-    plt.plot(iters, iteration_times_decay_lin1, iters, iteration_times_decay_lin2, iters, iteration_times_decay_lin3,
-             iters, iteration_times_decay_sqrt, iters, iteration_times_decay_con, iters, iteration_times_uniform)
-    plt.legend([r"$\frac{1}{\rho_c (t+\gamma)}$", r"$\frac{2}{\rho_c (t+\gamma)}$", r"$\frac{2}{\rho_c (0.1*t+\gamma)}$",
-                r"$\frac{2}{\rho_c (\sqrt{t}+\gamma)}$", "decaying every 20 epochs", r"$0.1$"])
-    plt.title('Iteration Time Allocation')
+    ax.set(xlabel='iteration', ylabel='time allocation',
+           title='Deadline Time Allocation by alpha')
+    ax.grid()
+    plt.legend()
     plt.show()
+
+
 if __name__ == '__main__':
     main()

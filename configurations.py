@@ -61,24 +61,24 @@ def args_parser():
                         help="optimizer to use (sgd or adam)")
     parser.add_argument('--momentum', type=float, default=0.5,
                         help="momentum")
-    parser.add_argument('--seed', type=float, default=1234, # 5555 for hetroFL mnist+mlp
+    parser.add_argument('--seed', type=float, default=1112, # 5555 for hetroFL mnist+mlp
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=10,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=20,
                         help="number of iterations for model training")
 
     parser.add_argument('--deadline_times', type=str, default='optimal',
                         help="weather to perform optimization to deadline time")
-    parser.add_argument('--global_epochs', type=int, default=150,
+    parser.add_argument('--global_epochs', type=int, default=70,
                         help="number of global epochs")
-    parser.add_argument('--t_max', type=int, default=6000,
+    parser.add_argument('--t_max', type=int, default=280,
                         help="maximal training time for the modified SALF")
     parser.add_argument('--g', type=int, default=1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=0.01,
+    parser.add_argument('--rho_s', type=int, default=0.4,
                         help="smoothness constant")
-    parser.add_argument('--rho_c', type=int, default=0.01,
+    parser.add_argument('--rho_c', type=int, default=0.1,
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=int, default=1,
                         help="heterogeneity gap")
@@ -86,10 +86,12 @@ def args_parser():
                         help="iteration minimum time")
     parser.add_argument('--lr_decay', type=str, default="fixed",
                         help="learning rate decay")
-    parser.add_argument('--deadline_allocation', type=str, default="inverse",
-                        help="learning rate decay")
-    parser.add_argument('--lr', type=float, default=0.1,
+    parser.add_argument('--lr', type=float, default=0.3,
                         help="learning rate")
+
+    parser.add_argument('--sample_with_replacement', type=int, default=1,
+                        help="sample_with_replacement")
+
 
     args = parser.parse_args()
     return args

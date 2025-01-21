@@ -42,11 +42,15 @@ if __name__ == '__main__':
         if args.deadline_times == "fixed":
             etta = args.lr * np.ones(np.size(iters))
         elif args.deadline_times == "inverse":
+            rho_s = 3e-2
+            rho_c = 3e-2
             etta = 1 / (args.rho_c * (iters + l_gamma))
+            iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
+                                                    args.g, rho_s, rho_c, args.gamma, args.t_min, etta)
         elif args.deadline_times == "sqrt":
             etta = 1 / (args.rho_c * (np.sqrt(iters) + l_gamma))
-        iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
-                                                args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
+            iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
+                                                     args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
 
     np.save(f'checkpoints/{args.exp_name}/iteration_times.npy', iteration_times)
 
@@ -94,7 +98,8 @@ if __name__ == '__main__':
             utils.distribute_model(local_models, global_model)
             users_loss = []
             for user_idx in range(args.num_users):
-                if (args.stragglers == 'drop') & (user_idx in stragglers_idx):
+                if (args.stragglers == 'drop') & (user_idx in stragglers_idx) &\
+                        (np.random.poisson(iteration_times[global_epoch]) < num_layers):
                     user_new_state_dict = copy.deepcopy(global_model).state_dict()
                     user_new_state_dict.update({})
                     local_models[user_idx]['model'].load_state_dict(user_new_state_dict)
