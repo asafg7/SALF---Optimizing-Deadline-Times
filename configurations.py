@@ -59,30 +59,30 @@ def args_parser():
     parser.add_argument('--optimizer', type=str, default='sgd',
                         choices=['sgd', 'adam'],
                         help="optimizer to use (sgd or adam)")
-    parser.add_argument('--momentum', type=float, default=0.5,
+    parser.add_argument('--momentum', type=float, default=0.9,
                         help="momentum")
     parser.add_argument('--seed', type=float, default=1112, # 5555 for hetroFL mnist+mlp
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=50,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=10,
                         help="number of iterations for model training")
 
     parser.add_argument('--deadline_times', type=str, default='inverse',
                         help="weather to perform optimization to deadline time")
-    parser.add_argument('--global_epochs', type=int, default=300,
+    parser.add_argument('--global_epochs', type=int, default=400,
                         help="number of global epochs")
-    parser.add_argument('--t_max', type=int, default=18000,
+    parser.add_argument('--t_max', type=int, default=20000,
                         help="maximal training time for the modified SALF")
     parser.add_argument('--g', type=int, default=1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=1e-1,
+    parser.add_argument('--rho_s', type=int, default=1,
                         help="smoothness constant")
     parser.add_argument('--rho_c', type=int, default=3e-1,
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=int, default=1,
                         help="heterogeneity gap")
-    parser.add_argument('--t_min', type=int, default=25,
+    parser.add_argument('--t_min', type=int, default=30,
                         help="iteration minimum time")
     parser.add_argument('--lr_decay', type=str, default="inverse",
                         help="learning rate decay")
@@ -91,11 +91,12 @@ def args_parser():
 
     parser.add_argument('--sample_with_replacement', type=int, default=1,
                         help="sample_with_replacement")
-    parser.add_argument('--mean_std', type=int, default=5,
+    parser.add_argument('--mean_std', type=float, default=5,
                         help="std of the user sgd")
     parser.add_argument('--batchsize_optimization', type=bool, default=False,
                         help="std of the user sgd")
-
+    parser.add_argument('--weight_decay', type=float, default=1e-1,
+                        help="l2 regularization")
 
     args = parser.parse_args()
     return args

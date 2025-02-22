@@ -45,7 +45,7 @@ def federated_setup(global_model, train_data, args):
             batch_size=args.train_batch_size, shuffle=True),
             'model': copy.deepcopy(global_model)}
         user['opt'] = optim.SGD(user['model'].parameters(), lr=args.lr,
-                                momentum=args.momentum) if args.optimizer == 'sgd' \
+                                momentum=args.momentum, weight_decay=args.weight_decay) if args.optimizer == 'sgd' \
             else optim.Adam(user['model'].parameters(), lr=args.lr)
         user['scheduler'] = optim.lr_scheduler.LambdaLR(user['opt'], lr_lambda=lambda_func)
         local_models[user_idx] = user
@@ -85,7 +85,7 @@ def initializations(args):
         os.makedirs('checkpoints/' + args.exp_name)
     textio = IOStream('checkpoints/' + args.exp_name + '/run.log')
 
-    best_val_acc = np.NINF
+    best_val_acc = -np.inf
     path_best_model = 'checkpoints/' + args.exp_name + '/model.best.t7'
 
     return textio, best_val_acc, path_best_model

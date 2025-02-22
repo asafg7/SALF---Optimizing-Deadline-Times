@@ -50,13 +50,7 @@ def opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u, gamma, rh
     m = x[-1]
     ex_mult = np.zeros(num_iter)
     p_val = np.zeros([l, num_iter])
-
-    if m < 100:
-        #print("!")
-        pass
-        a = 1-special.gammaincc(2, t/m)
     for i in range(1, l+1):
-        #print("T: " + str(t[-1]) + " M: " + str(m) + " | " + str(1-special.gammaincc(i, t[-1]/m)**u))
         p_val[i-1, :] = (1+special.gammaincc(i, t/m)**u)/(1-special.gammaincc(i, t/m)**u)
     p_sum = np.sum(p_val, 0)
     for i in range(num_iter):
@@ -87,7 +81,8 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
     optimal_val = opt_function_deadlines(x, etta, g, u, l, rho_c, b, d1)
 
     print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
-
+    
+    plt.ion()
     plt.plot(range(num_iter), t0, range(num_iter), t_opt)
     plt.legend(['Trivial Allocation', 'Optimal Allocation'])
     plt.title('Iteration Time Allocation')
@@ -99,7 +94,9 @@ def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c, gamm
 
     t0 = np.ones(num_iter) * (t_max / num_iter)
     d1 = np.sum(t0 ** 2) / 1000
-    bounds = opt.Bounds(lb=t_min, ub=np.inf)
+    lb_arr = np.append(t_min*np.ones([1, num_iter]), 0.5)
+    ub_arr = np.append(np.inf*np.ones([1, num_iter]),2)
+    bounds = opt.Bounds(lb=lb_arr, ub=ub_arr)
     lin_const = opt.LinearConstraint(np.append(np.ones([1, num_iter]), 0), lb=0, ub=t_max)
     m0 = 1
 
@@ -117,7 +114,8 @@ def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c, gamm
 
     print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
     print('m value - ', m_opt, ', Optimal Value', optimal_val)
-
+   
+    plt.ion()
     plt.plot(range(num_iter), t0, range(num_iter), t_opt)
     plt.legend(['Trivial Allocation', 'Optimal Allocation'])
     plt.title('Iteration Time Allocation')

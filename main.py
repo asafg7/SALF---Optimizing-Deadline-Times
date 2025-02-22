@@ -31,6 +31,8 @@ if __name__ == '__main__':
         num_layers = 6
     elif args.model == 'cnn2':
         num_layers = 8
+    elif args.model == "VGG11":
+        num_layers = 64
     elif args.model == 'VGG13':
         num_layers = 72
     elif args.model == 'VGG16':
