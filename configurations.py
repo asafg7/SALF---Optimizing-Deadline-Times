@@ -44,7 +44,7 @@ def args_parser():
                         help="number of samples per user; if 'None' - uniformly distribute all data among all users)")
     parser.add_argument('--num_users', type=int, default=15,
                         help="number of users participating in the federated learning")
-    parser.add_argument('--train_batch_size', type=int, default=64,
+    parser.add_argument('--train_batch_size', type=int, default=256,
                         help="trainset batch size")
     parser.add_argument('--local_iterations', type=int, default=1,
                         help="number of local iterations instead of local epoch")
@@ -65,32 +65,36 @@ def args_parser():
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=20,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=50,
                         help="number of iterations for model training")
 
-    parser.add_argument('--deadline_times', type=str, default='optimal',
+    parser.add_argument('--deadline_times', type=str, default='inverse',
                         help="weather to perform optimization to deadline time")
-    parser.add_argument('--global_epochs', type=int, default=70,
+    parser.add_argument('--global_epochs', type=int, default=300,
                         help="number of global epochs")
-    parser.add_argument('--t_max', type=int, default=280,
+    parser.add_argument('--t_max', type=int, default=18000,
                         help="maximal training time for the modified SALF")
     parser.add_argument('--g', type=int, default=1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=0.4,
+    parser.add_argument('--rho_s', type=int, default=1e-1,
                         help="smoothness constant")
-    parser.add_argument('--rho_c', type=int, default=0.1,
+    parser.add_argument('--rho_c', type=int, default=3e-1,
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=int, default=1,
                         help="heterogeneity gap")
-    parser.add_argument('--t_min', type=int, default=0.5,
+    parser.add_argument('--t_min', type=int, default=25,
                         help="iteration minimum time")
-    parser.add_argument('--lr_decay', type=str, default="fixed",
+    parser.add_argument('--lr_decay', type=str, default="inverse",
                         help="learning rate decay")
     parser.add_argument('--lr', type=float, default=0.3,
                         help="learning rate")
 
     parser.add_argument('--sample_with_replacement', type=int, default=1,
                         help="sample_with_replacement")
+    parser.add_argument('--mean_std', type=int, default=5,
+                        help="std of the user sgd")
+    parser.add_argument('--batchsize_optimization', type=bool, default=False,
+                        help="std of the user sgd")
 
 
     args = parser.parse_args()

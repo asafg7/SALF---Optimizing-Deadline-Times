@@ -33,6 +33,41 @@ def opt_function_deadlines(t, etta, g, u, l, rho_c, b, d1):
     f = np.prod(1-rho_c*etta)*d1 + np.sum(ex_mult*(b+c_t))
     return f
 
+def opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u, gamma, rho_s, d1):
+
+    """ optimization function for layered federated learning
+    Inputs:
+    x - input (deadlines + batch size) (1xT+1)
+    etta - step sizes (1xT)
+    g - gradient bound from AS3 (1x1)
+    u - number of users (1x1)
+    l - number of layers
+    rho_c - strong convexity constant from AS1 (1x1)
+    """
+
+    num_iter = np.size(x) - 1
+    t = x[:-1]
+    m = x[-1]
+    ex_mult = np.zeros(num_iter)
+    p_val = np.zeros([l, num_iter])
+
+    if m < 100:
+        #print("!")
+        pass
+        a = 1-special.gammaincc(2, t/m)
+    for i in range(1, l+1):
+        #print("T: " + str(t[-1]) + " M: " + str(m) + " | " + str(1-special.gammaincc(i, t[-1]/m)**u))
+        p_val[i-1, :] = (1+special.gammaincc(i, t/m)**u)/(1-special.gammaincc(i, t/m)**u)
+    p_sum = np.sum(p_val, 0)
+    for i in range(num_iter):
+        ex_mult[i] = (etta[i] ** 2)*np.prod(1-rho_c*etta[i+1:])
+    c_t = (g**2)*(4*u)/(u-1)*p_sum
+    b_t = (1/u**2) * (1/m) * np.sum(sigma_u ** 2) + 6 * rho_s * gamma
+    A = np.prod(1-rho_c*etta)*d1
+    B = np.sum(ex_mult*(b_t+c_t))
+    f = np.prod(1-rho_c*etta)*d1 + np.sum(ex_mult*(b_t+c_t))
+    return f
+
 
 def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, etta):
 
@@ -60,6 +95,37 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
 
     return t_opt
 
+def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, sigma_u, etta):
+
+    t0 = np.ones(num_iter) * (t_max / num_iter)
+    d1 = np.sum(t0 ** 2) / 1000
+    bounds = opt.Bounds(lb=t_min, ub=np.inf)
+    lin_const = opt.LinearConstraint(np.append(np.ones([1, num_iter]), 0), lb=0, ub=t_max)
+    m0 = 1
+
+    x0 = np.append(t0, m0)
+
+    trivial_val = opt_function_deadlines_batchsize(x0, etta, g, u, l, rho_c, sigma_u, gamma, rho_s, d1)
+    res = opt.minimize(opt_function_deadlines_batchsize, x0, method='trust-constr', jac="2-point", hess=SR1(),
+                       constraints=lin_const, options={'verbose': 1}, bounds=bounds,
+                       args=(etta, g, u, l, rho_c, sigma_u, gamma, rho_s, d1))
+    x = res.x
+    optimal_val = opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u, gamma, rho_s, d1)
+
+    t_opt = x[:-1]
+    m_opt = x[-1]
+
+    print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
+    print('m value - ', m_opt, ', Optimal Value', optimal_val)
+
+    plt.plot(range(num_iter), t0, range(num_iter), t_opt)
+    plt.legend(['Trivial Allocation', 'Optimal Allocation'])
+    plt.title('Iteration Time Allocation')
+    plt.show()
+
+    return t_opt, m_opt
+
+
 def main():
 
     fig, ax = plt.subplots()
@@ -69,11 +135,14 @@ def main():
     kappa = args.rho_s / args.rho_c
     l_gamma = np.max((8 * kappa, 1)) - 1
     num_layers = 8
-    alpha_arr = np.linspace(0.2, 2, 10)
+    sigma_u = 100*np.ones((1, args.num_users))
+    #alpha_arr = np.linspace(0.2, 2, 10)
+    alpha_arr = [1]
     for alpha in alpha_arr:
         etta = 1 / (args.rho_c * (np.power(iters, alpha) + l_gamma))
-        iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
-                                                args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
+        iteration_times = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs, args.t_max,
+                                                          args.g, args.rho_s, args.rho_c, args.gamma,
+                                                          args.t_min, sigma_u, etta)
         ax.plot(iteration_times, label="alpha: " + "{:.1f}".format(alpha))
 
     ax.set(xlabel='iteration', ylabel='time allocation',

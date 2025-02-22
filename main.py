@@ -15,7 +15,7 @@ from numpy.random import randint
 from configurations import args_parser
 import utils
 import models
-from optimal_deadlines import get_optimal_deadlines
+from optimal_deadlines import get_optimal_deadlines, get_optimal_deadlines_batchsize
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -29,11 +29,17 @@ if __name__ == '__main__':
 
     if args.model == 'mlp':
         num_layers = 6
-    else:
+    elif args.model == 'cnn2':
         num_layers = 8
+    elif args.model == 'VGG13':
+        num_layers = 72
+    elif args.model == 'VGG16':
+        num_layers = 84
+
 
     if args.deadline_times == "uniform":
         iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
+        m_factor = 1
     else:
         iters = np.arange(1, args.global_epochs + 1)
         kappa = args.rho_s / args.rho_c
@@ -42,16 +48,21 @@ if __name__ == '__main__':
         if args.deadline_times == "fixed":
             etta = args.lr * np.ones(np.size(iters))
         elif args.deadline_times == "inverse":
-            rho_s = 3e-2
-            rho_c = 3e-2
             etta = 1 / (args.rho_c * (iters + l_gamma))
-            iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
-                                                    args.g, rho_s, rho_c, args.gamma, args.t_min, etta)
         elif args.deadline_times == "sqrt":
             etta = 1 / (args.rho_c * (np.sqrt(iters) + l_gamma))
-            iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs, args.t_max,
-                                                     args.g, args.rho_s, args.rho_c, args.gamma, args.t_min, etta)
 
+        if args.batchsize_optimization:
+            sigma_u = args.mean_std*np.ones((1, args.num_users))
+            iteration_times, m_factor = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs,
+                                                              args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
+                                                              args.t_min, sigma_u, etta)
+        else:
+            iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs,
+                                                              args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
+                                                              args.t_min, etta)
+            m_factor = 1
+    args.train_batch_size = round(args.train_batch_size * m_factor)
     np.save(f'checkpoints/{args.exp_name}/iteration_times.npy', iteration_times)
 
     N_iterations = args.monte_carlo_iterations
@@ -128,7 +139,7 @@ if __name__ == '__main__':
                     if args.up_to_layer is not None:
                         up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
                     else:
-                        up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]) + 1, num_of_layers)
+                        up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]/m_factor) + 1, num_of_layers)
 
                     user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
                     user_new_state_dict.update(user_updated_layers)

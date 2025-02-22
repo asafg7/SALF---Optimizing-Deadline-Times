@@ -2,15 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import fedavg_times
 
-# MLP
-uniform_salf_path = 'mnist_mlp_uniform_allocation_fixed_lr'
-optimal_salf_path = 'mnist_mlp_inverse_allocation_fixed_lr'
-fedavg_path = 'mnist_mlp_fedavg_fixed_lr'
-drop_path = 'mnist_mlp_drop_fixed_lr'
+# VGG11
+uniform_salf_path = '28_01_25_cifar_vgg11_uniform'
+optimal_salf_path = '28_01_25_cifar_vgg11_inverse'
+fedavg_path = '27_01_25_cifar_vgg13_uniform'
+drop_path = '27_01_25_cifar_vgg13_inverse'
 
 iteration_time_uniform = np.load("checkpoints/" + uniform_salf_path + "/iteration_times.npy")
 iteration_time_optimal = np.load("checkpoints/" + optimal_salf_path + "/iteration_times.npy")
-iteration_time_fedavg = fedavg_times.find_fedavg_iteration_time(15, 6, 1, 150)
+iteration_time_fedavg = np.load("checkpoints/" + fedavg_path + "/iteration_times.npy")
 iteration_time_drop = np.load("checkpoints/" + drop_path + "/iteration_times.npy")
 
 validation_acc_uniform = np.load("checkpoints/" + uniform_salf_path + "/val_acc_list.npy")
@@ -24,9 +24,11 @@ time_fedavg = np.cumsum(iteration_time_fedavg)
 time_drop = np.cumsum(iteration_time_drop)
 
 fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-fig.suptitle("MLP - Fixed Learning Rate")
+fig.suptitle("CIFAR10 - VGG11")
 ax[0].plot(range(len(time_uniform)), iteration_time_uniform, label='Uniform Allocation')
 ax[0].plot(range(len(time_optimal)), iteration_time_optimal, label='Allocation by inverse LR')
+ax[0].plot(range(len(time_uniform)), iteration_time_fedavg, label='Allocation 2')
+ax[0].plot(range(len(time_optimal)), iteration_time_drop, label='Allocation 3')
 
 ax[0].set(xlabel='iteration', ylabel='deadline time',
        title='Deadline Allocation')
@@ -47,7 +49,7 @@ ax[2].plot(time_uniform, validation_acc_uniform, label='Uniform Allocation', mar
 ax[2].plot(time_optimal, validation_acc_optimal, label='Allocation by inverse LR', marker="o", markevery=20, markersize=6)
 ax[2].plot(time_fedavg, validation_acc_fedavg, label='FedAvg', marker="o", markevery=20, markersize=6)
 ax[2].plot(time_drop, validation_acc_drop, label='Drop', marker="o", markevery=20, markersize=6)
-ax[2].set_xlim([0, 500])
+ax[2].set_xlim([0, 20000])
 
 ax[2].set(xlabel='Training time', ylabel='Validation Accuracy [%]',
        title='Validation Accuracy by Time')
