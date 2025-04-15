@@ -59,10 +59,11 @@ def opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u,
     t = x[:-1]
     m = x[-1]
     ex_mult = np.zeros(num_iter)
-    p_val = np.zeros([l, num_iter])
+    var_val = np.zeros([l, num_iter])
     for i in range(1, l+1):
-        p_val[i-1, :] = (1+special.gammaincc(i, t/m)**u)/(1-2*special.gammaincc(i, t/m)**u)
-    p_sum = np.sum(p_val, 0)
+        p_val = special.gammaincc(l + 1 - i, t/m)**u
+        var_val[i-1, :] = (1+p_val)/(1-2*p_val)
+    p_sum = np.sum(var_val, 0)
     for i in range(num_iter):
         ex_mult[i] = (etta[i] ** 2)*np.prod(1-rho_c*etta[i+1:])
     c_t = (g**2)*(4*u)/(u-1)*p_sum
@@ -103,15 +104,16 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
     return t_opt
 
 def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c,
-                                    gamma, t_min, sigma_u, etta, alpha, N_samples, orig_batch_size):
+                                    gamma, t_min, mean_std, etta, alpha, N_samples, orig_batch_size):
 
     t0 = np.ones(num_iter) * (t_max / num_iter)
     d1 = np.sum(t0 ** 2) / 1000
     lb_arr = np.append(t_min*np.ones([1, num_iter]), 0.5)
-    ub_arr = np.append(np.inf*np.ones([1, num_iter]),2)
+    ub_arr = np.append(np.inf*np.ones([1, num_iter]), 2)
     bounds = opt.Bounds(lb=lb_arr, ub=ub_arr)
     lin_const = opt.LinearConstraint(np.append(np.ones([1, num_iter]), 0), lb=0, ub=t_max)
     m0 = 1
+    sigma_u = mean_std * np.random.rand(1, u)
 
     x0 = np.append(t0, m0)
 
@@ -128,7 +130,7 @@ def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c,
     m_opt = x[-1]
 
     print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
-    print('m value - ', m_opt, ', Optimal Value', optimal_val)
+    print('m value - ', m_opt)
    
     #plt.ion()
     plt.plot(range(num_iter), t0, range(num_iter), t_opt)

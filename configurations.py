@@ -42,7 +42,7 @@ def args_parser():
 
     parser.add_argument('--num_samples', type=int, default=None,
                         help="number of samples per user; if 'None' - uniformly distribute all data among all users)")
-    parser.add_argument('--num_users', type=int, default=5,
+    parser.add_argument('--num_users', type=int, default=20,
                         help="number of users participating in the federated learning")
     parser.add_argument('--train_batch_size', type=int, default=256,
                         help="trainset batch size")
@@ -59,11 +59,11 @@ def args_parser():
     parser.add_argument('--optimizer', type=str, default='sgd',
                         choices=['sgd', 'adam'],
                         help="optimizer to use (sgd or adam)")
-    parser.add_argument('--seed', type=float, default=1112, # 5555 for hetroFL mnist+mlp
+    parser.add_argument('--seed', type=float, default=1234,
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=10,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=20,
                         help="number of iterations for model training")
     parser.add_argument('--sample_with_replacement', type=bool, default=True,
                         help="sample_with_replacement")
@@ -81,16 +81,16 @@ def args_parser():
                         help="number of global epochs")
     parser.add_argument('--t_max', type=int, default=10000,
                         help="maximal training time for the modified SALF")
-    parser.add_argument('--t_min', type=int, default=30,
+    parser.add_argument('--t_min', type=int, default=3.4,
                         help="iteration minimum time")
-    parser.add_argument('--weight_decay', type=float, default=1e-2,
+    parser.add_argument('--weight_decay', type=float, default=0,
                         help="l2 regularization")
     parser.add_argument('--momentum', type=float, default=0.9,
                         help="momentum")
 
     parser.add_argument('--g', type=int, default=0.1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=1,
+    parser.add_argument('--rho_s', type=int, default=0.5e-1,
                         help="smoothness constant")
     parser.add_argument('--rho_c', type=int, default=3e-1,
                         help="strong convexity constant")

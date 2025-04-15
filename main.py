@@ -46,10 +46,9 @@ if __name__ == '__main__':
             etta = 1 / (args.rho_c * (np.sqrt(iters) + l_gamma))
 
         if args.batchsize_optimization:
-            sigma_u = args.mean_std*np.ones((1, args.num_users))
             iteration_times, m_factor = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs,
                                                               args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
-                                                              args.t_min, sigma_u, etta, args.alpha, N_samples,
+                                                              args.t_min, args.mean_std, etta, args.alpha, N_samples,
                                                                         args.train_batch_size)
         else:
             iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs,
