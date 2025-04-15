@@ -176,3 +176,28 @@ def test(test_loader, model, creterion, device):
     test_loss /= len(test_loader.dataset)
     accuracy = 100. * correct / len(test_loader.dataset)
     return accuracy
+
+
+def get_layers(model):
+    if model == 'mlp':
+        num_layers = 6
+    elif model == 'cnn2':
+        num_layers = 8
+    elif model == "VGG11":
+        num_layers = 64
+    elif model == 'VGG13':
+        num_layers = 72
+    elif model == 'VGG16':
+        num_layers = 84
+    else:
+        num_layers = 0
+    return num_layers
+
+def get_samples_count(data):
+    if data == 'mnist':
+        N_samples = 60000
+    elif data == 'cifar10':
+        N_samples = 50000
+    else:
+        N_samples = 0
+    return N_samples

@@ -27,17 +27,8 @@ if __name__ == '__main__':
     train_data, test_loader = utils.data(args)
     input, output, train_data, val_loader = utils.data_split(train_data, len(test_loader.dataset), args)
 
-    if args.model == 'mlp':
-        num_layers = 6
-    elif args.model == 'cnn2':
-        num_layers = 8
-    elif args.model == "VGG11":
-        num_layers = 64
-    elif args.model == 'VGG13':
-        num_layers = 72
-    elif args.model == 'VGG16':
-        num_layers = 84
-
+    num_layers = utils.get_layers(args.model)
+    N_samples = utils.get_samples_count(args.data)
 
     if args.deadline_times == "uniform":
         iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
@@ -58,13 +49,14 @@ if __name__ == '__main__':
             sigma_u = args.mean_std*np.ones((1, args.num_users))
             iteration_times, m_factor = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs,
                                                               args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
-                                                              args.t_min, sigma_u, etta)
+                                                              args.t_min, sigma_u, etta, args.alpha, N_samples,
+                                                                        args.train_batch_size)
         else:
             iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs,
                                                               args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
                                                               args.t_min, etta)
             m_factor = 1
-    args.train_batch_size = round(args.train_batch_size * m_factor)
+    args.train_batch_size = round(m_factor * args.train_batch_size)
     np.save(f'checkpoints/{args.exp_name}/iteration_times.npy', iteration_times)
 
     N_iterations = args.monte_carlo_iterations
