@@ -184,14 +184,21 @@ def get_layers(model):
     elif model == 'cnn2':
         num_layers = 8
     elif model == "VGG11":
-        num_layers = 64
+        num_layers = 11
+        layer_to_stop_arr = [0, 2, 2, 2, 9, 16, 23, 30, 37, 44, 51, 58]
     elif model == 'VGG13':
-        num_layers = 72
+        num_layers = 13
+        layer_to_stop_arr = [0, 2, 2, 2, 9, 16, 23, 30, 37, 44, 51, 58, 65, 72]
     elif model == 'VGG16':
-        num_layers = 84
+        num_layers = 16
+        layer_to_stop_arr = [0, 2, 2, 2, 9, 16, 23, 30, 37, 44, 51, 58, 65, 72, 79, 86]
+    elif model == 'VGG19':
+        num_layers = 19
+        layer_to_stop_arr = [0, 2, 2, 2, 9, 16, 23, 30, 37, 44, 51, 58, 65, 72, 79, 86, 93, 100]
     else:
         num_layers = 0
-    return num_layers
+        layer_to_stop = []
+    return (num_layers, layer_to_stop_arr)
 
 def get_samples_count(data):
     if data == 'mnist':

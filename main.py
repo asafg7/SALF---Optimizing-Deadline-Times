@@ -27,8 +27,9 @@ if __name__ == '__main__':
     train_data, test_loader = utils.data(args)
     input, output, train_data, val_loader = utils.data_split(train_data, len(test_loader.dataset), args)
 
-    num_layers = utils.get_layers(args.model)
+    num_layers, layer_to_stop_arr = utils.get_layers(args.model)
     N_samples = utils.get_samples_count(args.data)
+    R_u = np.random.uniform(low=0.0, high=args.maxR, size=args.num_users)
 
     if args.deadline_times == "uniform":
         iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
@@ -42,6 +43,7 @@ if __name__ == '__main__':
             etta = args.lr * np.ones(np.size(iters))
         elif args.deadline_times == "inverse":
             etta = 1 / (args.rho_c * (iters + l_gamma))
+            etta = args.lr / (iters + 1)
         elif args.deadline_times == "sqrt":
             etta = 1 / (args.rho_c * (np.sqrt(iters) + l_gamma))
 
@@ -49,11 +51,11 @@ if __name__ == '__main__':
             iteration_times, m_factor = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs,
                                                               args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
                                                               args.t_min, args.mean_std, etta, args.alpha, N_samples,
-                                                                        args.train_batch_size)
+                                                                        args.train_batch_size, R_u)
         else:
             iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs,
                                                               args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
-                                                              args.t_min, etta)
+                                                              args.t_min, etta, R_u)
             m_factor = 1
     args.train_batch_size = round(m_factor * args.train_batch_size)
     np.save(f'checkpoints/{args.exp_name}/iteration_times.npy', iteration_times)
@@ -132,8 +134,9 @@ if __name__ == '__main__':
                     if args.up_to_layer is not None:
                         up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
                     else:
-                        up_to_layer = np.minimum(np.random.poisson(iteration_times[global_epoch]/m_factor) + 1, num_of_layers)
-
+                        poiss_val = np.minimum(np.random.poisson(iteration_times[global_epoch]/m_factor), num_layers)
+                        up_to_layer = layer_to_stop_arr[poiss_val]
+                    a = user['model'].state_dict()
                     user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
                     user_new_state_dict.update(user_updated_layers)
                     user['model'].load_state_dict(user_new_state_dict)

@@ -81,26 +81,29 @@ def args_parser():
                         help="number of global epochs")
     parser.add_argument('--t_max', type=int, default=10000,
                         help="maximal training time for the modified SALF")
-    parser.add_argument('--t_min', type=int, default=3.4,
+    parser.add_argument('--t_min', type=float, default=3.4,
                         help="iteration minimum time")
-    parser.add_argument('--weight_decay', type=float, default=0,
+    parser.add_argument('--weight_decay', type=float, default=1e-3,
                         help="l2 regularization")
     parser.add_argument('--momentum', type=float, default=0.9,
                         help="momentum")
 
-    parser.add_argument('--g', type=int, default=0.1,
+    parser.add_argument('--g', type=float, default=1,
                         help="gradient bound")
-    parser.add_argument('--rho_s', type=int, default=0.5e-1,
+    parser.add_argument('--rho_s', type=float, default=1,
                         help="smoothness constant")
-    parser.add_argument('--rho_c', type=int, default=3e-1,
+    parser.add_argument('--rho_c', type=float, default=3e-1,
                         help="strong convexity constant")
-    parser.add_argument('--gamma', type=int, default=1,
+    parser.add_argument('--gamma', type=float, default=1,
                         help="heterogeneity gap")
-    parser.add_argument('--lr', type=float, default=0.3,
+    parser.add_argument('--lr', type=float, default=0.1,
                         help="Learning rate for fixed rate")
-    parser.add_argument('--mean_std', type=float, default=5,
+    parser.add_argument('--mean_std', type=float, default=50,
                         help="std of the user sgd")
     parser.add_argument('--alpha', type=float, default=1,
+                        help="sgd variance weight")
+    parser.add_argument('--maxR', type=float, default=8192,
+
                         help="sgd variance weight")
 
     args = parser.parse_args()
