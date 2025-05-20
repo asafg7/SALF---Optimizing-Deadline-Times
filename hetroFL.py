@@ -20,10 +20,7 @@ def hetroFL_federated_setup():
     if args.lr_decay == "fixed":
         lambda_func = lambda epoch: args.lr
     elif args.lr_decay == "inverse":
-        #lambda_func = lambda epoch: 1 / (args.rho_c * (epoch + np.max((8 * args.rho_s / args.rho_c, 1)) - 1))
-        lambda_func = lambda epoch: 1 / (1 + epoch)
-    elif args.lr_decay == "sqrt":
-        lambda_func = lambda epoch: 1 / (args.rho_c * (np.sqrt(epoch) + np.max((8 * args.rho_s / args.rho_c, 1)) - 1))
+        lambda_func = lambda epoch: args.lr / (1 + epoch)
     # create a dict of dict s (local users), i.e. {'1': {'data':..., 'model':..., 'opt':...}, ...}
     indexes = torch.randperm(len(train_data))
     user_data_len = math.floor(len(train_data) / args.num_users) if args.num_samples == None else args.num_samples

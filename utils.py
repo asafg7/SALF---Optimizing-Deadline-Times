@@ -35,9 +35,7 @@ def federated_setup(global_model, train_data, args):
     if args.lr_decay == "fixed":
         lambda_func = lambda epoch: args.lr
     elif args.lr_decay == "inverse":
-        lambda_func = lambda epoch: 1 / (args.rho_c * (epoch + np.max((8 * args.rho_s / args.rho_c, 1)) - 1))
-    elif args.lr_decay == "sqrt":
-        lambda_func = lambda epoch: 1 / (args.rho_c * (np.sqrt(epoch) + np.max((8 * args.rho_s / args.rho_c, 1)) - 1))
+        lambda_func = lambda epoch: 1 / (1 + epoch)
     for user_idx in range(args.num_users):
         user = {'data': torch.utils.data.DataLoader(
             torch.utils.data.Subset(train_data,

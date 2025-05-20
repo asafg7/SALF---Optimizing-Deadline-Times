@@ -1,26 +1,25 @@
-# Straggler-Aware Layer-Wise Low-Latency Federated Learning
-![image](https://github.com/langnatalie/SALF/assets/55830582/d706885a-e0a9-47bd-895f-a1be0c8f3213)
+# Adaptive Deadline and Batch Layered Synchronized Federated Learning
 
 ## Introduction
-In this work we propose _Straggler-Aware Layer-Wise Low-Latency Federated Learning (SALF)_, that leverages the optimization procedure of neural networks via backpropagation to update the global model in a _layer-wise_ fashion. This repository contains a basic PyTorch implementation of SALF. Please refer to our [paper](https://arxiv.org/abs/2403.18375) for more details.
+We introduce ADEL-FL, a federated learning algorithm that optimizes per-round deadlines and batch sizes to accelerate convergence under time constraints. This codebase contains a PyTorch implementation of ADEL-FL.
 
 ## Usage
-This code has been tested on Python 3.7.3, PyTorch 1.8.0 and CUDA 11.1.
+This code has been tested on Python 3.11
 
 ### Prerequisite
-1. PyTorch=1.8.0: https://pytorch.org
-2. scipy
-3. tqdm
-4. matplotlib
-5. torchinfo
-6. TensorboardX: https://github.com/lanpa/tensorboardX
+1. PyTorch=2.5.1
+2. scipy=1.14.1
+3. tqdm=4.66.5
+4. matplotlib=3.9.2
+5. torchinfo=1.8.0
+6. TensorboardX=2.6.2.2
 
 ### Training
 ```
-python main.py --exp_name=salf --stragglers salf --stragglers_percent 0.9 --up_to_layer 1 --data mnist --model mlp
+python3 main.py --exp_name=adel-fl_cnn_mnist --data mnist --model cnn2 --global_epochs 50 --t_max 200 --num_users 15 --lr 0.5
 ```
 
 ### Testing
 ```
-python main.py --exp_name=salf --eval 
+python3 main.py --exp_name=adel-fl_cnn_mnist --eval
 ```

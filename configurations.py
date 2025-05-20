@@ -22,8 +22,8 @@ def args_parser():
 
     parser.add_argument('--exp_name', type=str, default='exp',
                         help="the name of the current experiment")
-    parser.add_argument('--stragglers', type=none_or_str, default='poisson_salf',
-                        choices=['salf', 'drop', None, 'poisson_salf'],
+    parser.add_argument('--stragglers', type=none_or_str, default='adel-fl',
+                        choices=['drop', None, 'adel-fl'],
                         help="whether the FL is stragglers aware")
     parser.add_argument('--stragglers_percent', type=float_or_str, default=1,
                         help="the percent of percent out of the edge users")
@@ -63,18 +63,18 @@ def args_parser():
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=5,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=1,
                         help="number of iterations for model training")
     parser.add_argument('--sample_with_replacement', type=bool, default=True,
                         help="sample_with_replacement")
 
     parser.add_argument('--deadline_times', type=str, default='inverse',
-                        choices=['uniform', 'inverse', 'fixed', 'sqrt'],
+                        choices=['uniform', 'inverse', 'fixed'],
                         help="perform optimization according to learning rate")
     parser.add_argument('--lr_decay', type=str, default="inverse",
-                        choices=['inverse', 'fixed', 'sqrt'],
+                        choices=['inverse', 'fixed'],
                         help="learning rate decay")
-    parser.add_argument('--batchsize_optimization', type=bool, default=False,
+    parser.add_argument('--batchsize_optimization', type=bool, default=True,
                         help="std of the user sgd")
 
     parser.add_argument('--global_epochs', type=int, default=200,
@@ -83,12 +83,12 @@ def args_parser():
                         help="maximal training time for the modified SALF")
     parser.add_argument('--t_min', type=float, default=3.4,
                         help="iteration minimum time")
-    parser.add_argument('--weight_decay', type=float, default=1e-3,
+    parser.add_argument('--weight_decay', type=float, default=0,
                         help="l2 regularization")
     parser.add_argument('--momentum', type=float, default=0.9,
                         help="momentum")
 
-    parser.add_argument('--g', type=float, default=1,
+    parser.add_argument('--g', type=float, default=0.1,
                         help="gradient bound")
     parser.add_argument('--rho_s', type=float, default=1,
                         help="smoothness constant")
@@ -96,14 +96,13 @@ def args_parser():
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=float, default=1,
                         help="heterogeneity gap")
-    parser.add_argument('--lr', type=float, default=0.1,
+    parser.add_argument('--lr', type=float, default=0.3,
                         help="Learning rate for fixed rate")
-    parser.add_argument('--mean_std', type=float, default=50,
+    parser.add_argument('--mean_std', type=float, default=5,
                         help="std of the user sgd")
     parser.add_argument('--alpha', type=float, default=1,
                         help="sgd variance weight")
     parser.add_argument('--maxR', type=float, default=8192,
-
                         help="sgd variance weight")
 
     args = parser.parse_args()

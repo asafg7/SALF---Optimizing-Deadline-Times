@@ -31,7 +31,7 @@ if __name__ == '__main__':
     N_samples = utils.get_samples_count(args.data)
     R_u = np.random.uniform(low=0.0, high=args.maxR, size=args.num_users)
 
-    if args.deadline_times == "uniform":
+    if args.deadline_times == "uniform" or args.eval:
         iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
         m_factor = 1
     else:
@@ -42,10 +42,7 @@ if __name__ == '__main__':
         if args.deadline_times == "fixed":
             etta = args.lr * np.ones(np.size(iters))
         elif args.deadline_times == "inverse":
-            etta = 1 / (args.rho_c * (iters + l_gamma))
             etta = args.lr / (iters + 1)
-        elif args.deadline_times == "sqrt":
-            etta = 1 / (args.rho_c * (np.sqrt(iters) + l_gamma))
 
         if args.batchsize_optimization:
             iteration_times, m_factor = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs,
