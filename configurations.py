@@ -63,7 +63,7 @@ def args_parser():
                         help="manual seed for reproducibility")
     parser.add_argument('--eval', action='store_true',
                         help="weather to perform inference of training")
-    parser.add_argument('--monte_carlo_iterations', type=int, default=20,
+    parser.add_argument('--monte_carlo_iterations', type=int, default=5,
                         help="number of iterations for model training")
     parser.add_argument('--sample_with_replacement', type=bool, default=True,
                         help="sample_with_replacement")

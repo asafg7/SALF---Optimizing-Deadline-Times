@@ -181,8 +181,10 @@ def test(test_loader, model, creterion, device):
 def get_layers(model):
     if model == 'mlp':
         num_layers = 6
+        layer_to_stop_arr = [0, 1, 2, 3, 4, 5, 6]
     elif model == 'cnn2':
         num_layers = 8
+        layer_to_stop_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     elif model == "VGG11":
         num_layers = 11
         layer_to_stop_arr = [0, 2, 2, 2, 9, 16, 23, 30, 37, 44, 51, 58]
