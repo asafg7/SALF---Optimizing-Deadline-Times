@@ -115,18 +115,7 @@ if __name__ == '__main__':
                                                        train_creterion, args.device, args.local_iterations)
                     user_loss.append(train_loss)
 
-                if (args.stragglers == 'salf') & (user_idx in stragglers_idx):
-                    user_new_state_dict = copy.deepcopy(global_model).state_dict()
-                    if args.up_to_layer is not None:
-                        up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
-                    else:
-                        up_to_layer = np.random.randint(1, num_of_layers + 1)  # random last-to-first layers updated
-
-                    user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
-                    user_new_state_dict.update(user_updated_layers)
-                    user['model'].load_state_dict(user_new_state_dict)
-
-                if (args.stragglers == 'poisson_salf') & (user_idx in stragglers_idx):
+                if (args.stragglers == 'adel-fl') & (user_idx in stragglers_idx):
                     user_new_state_dict = copy.deepcopy(global_model).state_dict()
                     if args.up_to_layer is not None:
                         up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated

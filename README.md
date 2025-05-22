@@ -16,7 +16,7 @@ This code has been tested on Python 3.11
 
 ### Training
 ```
-python3 main.py --exp_name=adel-fl_cnn_mnist --data mnist --model cnn2 --global_epochs 50 --t_max 200 --num_users 20 --lr 0.5
+python3 main.py --exp_name=adel-fl_cnn_mnist --data mnist --model cnn2 --global_epochs 50 --t_max 200 --num_users 20 --lr 1
 ```
 
 ### Testing

@@ -197,7 +197,7 @@ def get_layers(model):
         layer_to_stop_arr = [0, 2, 2, 2, 9, 16, 23, 30, 37, 44, 51, 58, 65, 72, 79, 86, 93, 100]
     else:
         num_layers = 0
-        layer_to_stop = []
+        layer_to_stop_arr = []
     return (num_layers, layer_to_stop_arr)
 
 def get_samples_count(data):

@@ -3,7 +3,6 @@ from scipy import special
 from matplotlib import pyplot as plt
 from scipy.optimize import SR1
 import scipy.optimize as opt
-from configurations import args_parser
 
 
 def opt_function_deadlines(t, etta, g, u, l, rho_c, b, d1):
@@ -30,8 +29,6 @@ def opt_function_deadlines(t, etta, g, u, l, rho_c, b, d1):
     for i in range(num_iter):
         ex_mult[i] = (etta[i] ** 2)*np.prod(1-rho_c*etta[i+1:])
     c_t = (g**2)*(4*u)/(u-1)*p_sum
-    A = np.prod(1-rho_c*etta)*d1
-    B = np.sum(ex_mult*(b+c_t))
     f = np.prod(1-rho_c*etta)*d1 + np.sum(ex_mult*(b+c_t))
     return f
 
@@ -70,8 +67,6 @@ def opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u,
     b_t = (1 / (u**2 * m)) * np.sum(np.divide(sigma_u ** 2, R_u)) + 6 * rho_s * gamma
     for i in range(num_iter):
         ex_mult[i] = (etta[i] ** 2)*np.prod(1-rho_c*etta[i+1:])
-    A = np.prod(1-rho_c*etta)*d1
-    B = np.sum(ex_mult*(b_t+c_t))
     f = 1e3 * (np.prod(1-rho_c*etta)*d1 + np.sum(ex_mult*(alpha*b_t+c_t)))
     return f
 
@@ -95,7 +90,6 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
 
     print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
     
-    #plt.ion()
     plt.plot(range(num_iter), t0, range(num_iter), t_opt)
     plt.legend(['Trivial Allocation', 'Optimal Allocation'])
     plt.title('Iteration Time Allocation')
@@ -108,8 +102,8 @@ def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c,
 
     t0 = np.ones(num_iter) * (t_max / num_iter)
     d1 = np.sum(t0 ** 2) / 1e6
-    lb_arr = np.append(t_min*np.ones([1, num_iter]), 0.5)
-    ub_arr = np.append(np.inf*np.ones([1, num_iter]), 1)
+    lb_arr = np.append(t_min*np.ones([1, num_iter]), 0)
+    ub_arr = np.append(np.inf*np.ones([1, num_iter]), 1.2)
     bounds = opt.Bounds(lb=lb_arr, ub=ub_arr)
     lin_const = opt.LinearConstraint(np.append(np.ones([1, num_iter]), 0), lb=0, ub=t_max)
     m0 = 1
@@ -132,41 +126,9 @@ def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c,
     print('Trivial Value - ', trivial_val, ', Optimal Value', optimal_val)
     print('m value - ', m_opt)
    
-    #plt.ion()
     plt.plot(range(num_iter), t0, range(num_iter), t_opt)
     plt.legend(['Trivial Allocation', 'Optimal Allocation'])
     plt.title('Iteration Time Allocation')
     plt.show()
 
     return t_opt, m_opt
-
-
-def main():
-
-    fig, ax = plt.subplots()
-
-    args = args_parser()
-    iters = np.arange(1, args.global_epochs + 1)
-    kappa = args.rho_s / args.rho_c
-    l_gamma = np.max((8 * kappa, 1)) - 1
-    num_layers = 8
-    args.t_max = 200*8
-    sigma_u = 100*np.ones((1, args.num_users))
-    #alpha_arr = np.linspace(0.2, 2, 10)
-    alpha_arr = [1]
-    for alpha in alpha_arr:
-        etta = 1 / (args.rho_c * (np.power(iters, alpha) + l_gamma))
-        iteration_times = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs, args.t_max,
-                                                          args.g, args.rho_s, args.rho_c, args.gamma,
-                                                          args.t_min, sigma_u, etta, alpha, 100, 100)
-        ax.plot(iteration_times, label="alpha: " + "{:.1f}".format(alpha))
-
-    ax.set(xlabel='iteration', ylabel='time allocation',
-           title='Deadline Time Allocation by alpha')
-    ax.grid()
-    plt.legend()
-    plt.show()
-
-
-if __name__ == '__main__':
-    main()
