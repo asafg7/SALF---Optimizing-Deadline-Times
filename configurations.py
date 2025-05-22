@@ -80,7 +80,7 @@ def args_parser():
     parser.add_argument('--global_epochs', type=int, default=200,
                         help="number of global epochs")
     parser.add_argument('--t_max', type=int, default=10000,
-                        help="maximal training time for the modified SALF")
+                        help="maximal training time for adel-fl")
     parser.add_argument('--t_min', type=float, default=3.4,
                         help="iteration minimum time")
     parser.add_argument('--weight_decay', type=float, default=0,
