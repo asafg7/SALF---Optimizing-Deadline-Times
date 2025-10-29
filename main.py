@@ -100,37 +100,41 @@ if __name__ == '__main__':
         for idx, global_epoch in tqdm(enumerate(range(0, args.global_epochs))):
             utils.distribute_model(local_models, global_model)
             users_loss = []
+
             for user_idx in range(args.num_users):
-                if (args.stragglers == 'drop') & (user_idx in stragglers_idx) &\
-                        (np.random.poisson(iteration_times[global_epoch]) < num_layers):
-                    user_new_state_dict = copy.deepcopy(global_model).state_dict()
-                    user_new_state_dict.update({})
-                    local_models[user_idx]['model'].load_state_dict(user_new_state_dict)
-                    continue
 
-                user_loss = []
-                for local_epoch in range(0, args.local_epochs):
-                    user = local_models[user_idx]
-                    train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'], user['scheduler'],
-                                                       train_creterion, args.device, args.local_iterations)
-                    user_loss.append(train_loss)
+                for layer in range(num_layers):
 
-                if (args.stragglers == 'adel-fl') & (user_idx in stragglers_idx):
-                    user_new_state_dict = copy.deepcopy(global_model).state_dict()
-                    if args.up_to_layer is not None:
-                        up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
-                    else:
-                        poiss_val = np.minimum(np.random.poisson(iteration_times[global_epoch]/m_factor), num_layers)
-                        up_to_layer = layer_to_stop_arr[poiss_val]
-                    a = user['model'].state_dict()
-                    user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
-                    user_new_state_dict.update(user_updated_layers)
-                    user['model'].load_state_dict(user_new_state_dict)
+                    if (args.stragglers == 'drop') & (user_idx in stragglers_idx) &\
+                            (np.random.poisson(iteration_times[global_epoch]) < num_layers):
+                        user_new_state_dict = copy.deepcopy(global_model).state_dict()
+                        user_new_state_dict.update({})
+                        local_models[user_idx]['model'].load_state_dict(user_new_state_dict)
+                        continue
 
-                try:
-                    users_loss.append(mean(user_loss))
-                except:
-                    continue
+                    user_loss = []
+                    for local_epoch in range(0, args.local_epochs):
+                        user = local_models[user_idx]
+                        train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'], user['scheduler'],
+                                                           train_creterion, args.device, args.local_iterations)
+                        user_loss.append(train_loss)
+
+                    if (args.stragglers == 'adel-fl') & (user_idx in stragglers_idx):
+                        user_new_state_dict = copy.deepcopy(global_model).state_dict()
+                        if args.up_to_layer is not None:
+                            up_to_layer = num_of_layers - args.up_to_layer  # last-to-first layers updated
+                        else:
+                            poiss_val = np.minimum(np.random.poisson(iteration_times[global_epoch]/m_factor), num_layers)
+                            up_to_layer = layer_to_stop_arr[np.floor(poiss_val/args.local_epochs)]
+                        a = user['model'].state_dict()
+                        user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
+                        user_new_state_dict.update(user_updated_layers)
+                        user['model'].load_state_dict(user_new_state_dict)
+
+                    try:
+                        users_loss.append(mean(user_loss))
+                    except:
+                        continue
             try:
                 train_loss = mean(users_loss)
             except:

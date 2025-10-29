@@ -10,6 +10,39 @@ from torch import optim
 from statistics import mean
 from torchvision import datasets, transforms
 
+def dirichlet_split_noniid(train_labels, num_users, alpha=0.1, num_classes=10):
+    label_indices = [np.where(train_labels == i)[0] for i in range(num_classes)]
+    user_indices = [[] for _ in range(num_users)]
+
+    for c, idxs in enumerate(label_indices):
+        np.random.shuffle(idxs)
+        proportions = np.random.dirichlet(alpha=np.ones(num_users)*alpha)
+        proportions = np.cumsum(proportions) * len(idxs)
+        start = 0
+        for user_id, end in enumerate(proportions.astype(int)):
+            user_indices[user_id].extend(idxs[start:end])
+            start = end
+    return user_indices
+
+
+def two_digits_split_mnist(dataset, num_users, num_classes):
+    labels = np.array(dataset.targets)
+    idxs_per_class = [np.where(labels == i)[0] for i in range(num_classes)]
+    for arr in idxs_per_class:
+        np.random.shuffle(arr)
+
+    user_indices = [[] for _ in range(num_users)]
+    class_pairs = [(i, (i + 1) % num_classes) for i in range(num_users)]
+
+    for user_id in range(num_users):
+        c1, c2 = class_pairs[user_id % len(class_pairs)]
+        part1 = np.array_split(idxs_per_class[c1], num_users)[user_id % num_users]
+        part2 = np.array_split(idxs_per_class[c2], num_users)[user_id % num_users]
+        user_indices[user_id].extend(part1)
+        user_indices[user_id].extend(part2)
+
+    return user_indices
+
 
 def FedAvg(local_models, global_model):
     state_dict = global_model.state_dict()
