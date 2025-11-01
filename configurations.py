@@ -22,7 +22,7 @@ def args_parser():
 
     parser.add_argument('--exp_name', type=str, default='exp',
                         help="the name of the current experiment")
-    parser.add_argument('--stragglers', type=none_or_str, default='adel-fl',
+    parser.add_argument('--stragglers', type=none_or_str, default='bcd',
                         choices=['drop', None, 'adel-fl'],
                         help="whether the FL is stragglers aware")
     parser.add_argument('--stragglers_percent', type=float_or_str, default=1,
@@ -42,9 +42,9 @@ def args_parser():
 
     parser.add_argument('--num_samples', type=int, default=None,
                         help="number of samples per user; if 'None' - uniformly distribute all data among all users)")
-    parser.add_argument('--num_users', type=int, default=20,
+    parser.add_argument('--num_users', type=int, default=5,
                         help="number of users participating in the federated learning")
-    parser.add_argument('--train_batch_size', type=int, default=256,
+    parser.add_argument('--train_batch_size', type=int, default=128,
                         help="trainset batch size")
     parser.add_argument('--local_iterations', type=int, default=1,
                         help="number of local iterations instead of local epoch")
@@ -77,9 +77,9 @@ def args_parser():
     parser.add_argument('--batchsize_optimization', type=bool, default=True,
                         help="std of the user sgd")
 
-    parser.add_argument('--global_epochs', type=int, default=200,
+    parser.add_argument('--global_epochs', type=int, default=20,
                         help="number of global epochs")
-    parser.add_argument('--t_max', type=int, default=10000,
+    parser.add_argument('--t_max', type=int, default=120,
                         help="maximal training time for adel-fl")
     parser.add_argument('--t_min', type=float, default=3.4,
                         help="iteration minimum time")
@@ -96,7 +96,7 @@ def args_parser():
                         help="strong convexity constant")
     parser.add_argument('--gamma', type=float, default=1,
                         help="heterogeneity gap")
-    parser.add_argument('--lr', type=float, default=0.3,
+    parser.add_argument('--lr', type=float, default=0.5,
                         help="Learning rate for fixed rate")
     parser.add_argument('--mean_std', type=float, default=5,
                         help="std of the user sgd")

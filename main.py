@@ -103,7 +103,15 @@ if __name__ == '__main__':
 
             for user_idx in range(args.num_users):
 
+                const_val = 4
+                layer_processed_max = const_val*np.minimum(np.random.poisson(iteration_times[global_epoch]*args.local_epochs/m_factor), args.local_epochs*num_layers*num_layers/(2*const_val))
+                layer_processed_counter = 0
+
                 for layer in range(num_layers):
+
+                    layer_processed_counter += (layer + 1)*args.local_epochs
+                    if layer_processed_counter > layer_processed_max:
+                        break
 
                     if (args.stragglers == 'drop') & (user_idx in stragglers_idx) &\
                             (np.random.poisson(iteration_times[global_epoch]) < num_layers):
@@ -126,6 +134,14 @@ if __name__ == '__main__':
                         else:
                             poiss_val = np.minimum(np.random.poisson(iteration_times[global_epoch]/m_factor), num_layers)
                             up_to_layer = layer_to_stop_arr[np.floor(poiss_val/args.local_epochs)]
+                        a = user['model'].state_dict()
+                        user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
+                        user_new_state_dict.update(user_updated_layers)
+                        user['model'].load_state_dict(user_new_state_dict)
+
+                    if (args.stragglers == 'bcd') & (user_idx in stragglers_idx):
+                        user_new_state_dict = copy.deepcopy(global_model).state_dict()
+                        up_to_layer = layer + 1  # last-to-first layers updated
                         a = user['model'].state_dict()
                         user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
                         user_new_state_dict.update(user_updated_layers)
