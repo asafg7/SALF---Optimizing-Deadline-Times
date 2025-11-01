@@ -101,6 +101,7 @@ if __name__ == '__main__':
             utils.distribute_model(local_models, global_model)
             users_loss = []
             for user_idx in range(args.num_users):
+
                 if (args.stragglers == 'drop') & (user_idx in stragglers_idx) &\
                         (np.random.poisson(iteration_times[global_epoch]) < num_layers):
                     user_new_state_dict = copy.deepcopy(global_model).state_dict()
@@ -109,7 +110,15 @@ if __name__ == '__main__':
                     continue
 
                 user_loss = []
+                const_val = 4
+                layer_processed_max = np.minimum(np.random.poisson(iteration_times[global_epoch]*args.local_epochs/m_factor), args.local_epochs*num_layers*num_layers/(2*const_val))
+                layer_processed_counter = 0
+
                 for local_epoch in range(0, args.local_epochs):
+                    layer_processed_counter += num_layers
+                    if layer_processed_counter > layer_processed_max:
+                        break
+
                     user = local_models[user_idx]
                     train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'], user['scheduler'],
                                                        train_creterion, args.device, args.local_iterations)
@@ -122,6 +131,7 @@ if __name__ == '__main__':
                     else:
                         poiss_val = np.minimum(np.random.poisson(iteration_times[global_epoch]/m_factor), num_layers)
                         up_to_layer = layer_to_stop_arr[poiss_val]
+                        up_to_layer = num_layers
                     a = user['model'].state_dict()
                     user_updated_layers = OrderedDict(islice(reversed(user['model'].state_dict().items()), up_to_layer))
                     user_new_state_dict.update(user_updated_layers)
