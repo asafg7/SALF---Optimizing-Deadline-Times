@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 import fedavg_times
 
 # MLP
-uniform_salf_path = 'mnist_mlp_uniform_allocation_fixed_lr'
-optimal_salf_path = 'mnist_mlp_inverse_allocation_fixed_lr'
-fedavg_path = 'mnist_mlp_fedavg_fixed_lr'
-drop_path = 'mnist_mlp_drop_fixed_lr'
+uniform_salf_path = 'sgd_basic'
+optimal_salf_path = 'bcd_basic'
+fedavg_path = 'bcd_basic'
+drop_path = 'bcd_basic'
 
-iteration_time_uniform = np.load("checkpoints/" + uniform_salf_path + "/iteration_times.npy")
-iteration_time_optimal = np.load("checkpoints/" + optimal_salf_path + "/iteration_times.npy")
-iteration_time_fedavg = fedavg_times.find_fedavg_iteration_time(15, 6, 1, 150)
-iteration_time_drop = np.load("checkpoints/" + drop_path + "/iteration_times.npy")
+iteration_time_uniform = 4*np.load("checkpoints/" + uniform_salf_path + "/iteration_times.npy")
+iteration_time_optimal = 16*np.load("checkpoints/" + optimal_salf_path + "/iteration_times.npy")
+iteration_time_fedavg = 16*np.load("checkpoints/" + fedavg_path + "/iteration_times.npy")
+iteration_time_drop = 16*np.load("checkpoints/" + drop_path + "/iteration_times.npy")
 
 validation_acc_uniform = np.load("checkpoints/" + uniform_salf_path + "/val_acc_list.npy")
 validation_acc_optimal = np.load("checkpoints/" + optimal_salf_path + "/val_acc_list.npy")
