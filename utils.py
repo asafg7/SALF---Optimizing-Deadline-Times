@@ -27,29 +27,100 @@ def FedAvg(local_models, global_model):
     return
 
 
+def dirichlet_split_non_iid(dataset, alpha, n_clients):
+    try:
+        labels = np.array(dataset.targets)
+    except AttributeError:
+        # Fallback for datasets without a .targets attribute
+        labels = np.array([dataset[i][1] for i in range(len(dataset))])
+
+    n_classes = len(np.unique(labels))
+
+    # client_indices[i] will be the list of indices for client i
+    client_indices = [[] for _ in range(n_clients)]
+
+    # class_indices[j] will be the list of indices for class j
+    class_indices = [np.where(labels == i)[0] for i in range(n_classes)]
+
+    for k_indices in class_indices:
+        # For each class, get the indices, shuffle them
+        np.random.shuffle(k_indices)
+
+        # Sample proportions for this class from Dirichlet(alpha)
+        # proportions[i] = fraction of class k given to client i
+        proportions = np.random.dirichlet(np.repeat(alpha, n_clients))
+
+        # Correct for potential rounding errors by ensuring sum is exactly len(k_indices)
+        proportions = (proportions * len(k_indices)).astype(int)
+        proportions[-1] = len(k_indices) - np.sum(proportions[:-1])
+
+        # Split the class indices based on the sampled proportions
+        current_idx = 0
+        for i in range(n_clients):
+            client_indices[i].extend(k_indices[current_idx: current_idx + proportions[i]])
+            current_idx += proportions[i]
+
+    # Shuffle each client's final list of indices
+    for i in range(n_clients):
+        np.random.shuffle(client_indices[i])
+
+    return client_indices
+
 def federated_setup(global_model, train_data, args):
     # create a dict of dict s (local users), i.e. {'1': {'data':..., 'model':..., 'opt':...}, ...}
-    indexes = torch.randperm(len(train_data))
-    user_data_len = math.floor(len(train_data) / args.num_users) if args.num_samples == None else args.num_samples
+
+    if args.dirichlet_alpha is not None:
+        # Use the new non-IID Dirichlet split
+        if args.num_samples is not None:
+            # We raise an error because the dirichlet split uses all data
+            # and partitioning it in a non-IID way AND THEN taking a fixed
+            # number of samples per client is ambiguous and usually not desired.
+            raise ValueError("Cannot use --dirichlet_alpha and --num_samples together. "
+                             "The Dirichlet split partitions all available data.")
+
+        client_indices = dirichlet_split_non_iid(train_data, args.dirichlet_alpha, args.num_users)
+
+    else:
+        # Original IID split logic
+        print("Generating IID split...")
+        indexes = torch.randperm(len(train_data))
+        user_data_len = math.floor(len(train_data) / args.num_users) if args.num_samples == None else args.num_samples
+        client_indices = []
+        for user_idx in range(args.num_users):
+            start = user_idx * user_data_len
+            end = (user_idx + 1) * user_data_len
+            client_indices.append(indexes[start:end])
+
+    # --- The rest of the function remains the same, but uses client_indices ---
+
     local_models = {}
     if args.lr_decay == "fixed":
         lambda_func = lambda epoch: args.lr
     elif args.lr_decay == "inverse":
         lambda_func = lambda epoch: 1 / (1 + epoch)
+
     for user_idx in range(args.num_users):
+        user_indices = client_indices[user_idx]
+
+        if len(user_indices) == 0:
+            print(f"Warning: Client {user_idx} has 0 samples. This can happen with extreme non-IID (low alpha).")
+            # Create an empty dataloader if you want to skip, or handle as needed
+            user_subset = torch.utils.data.Subset(train_data, [])
+        else:
+            user_subset = torch.utils.data.Subset(train_data, user_indices)
+
         user = {'data': torch.utils.data.DataLoader(
-            torch.utils.data.Subset(train_data,
-                                    indexes[user_idx * user_data_len:(user_idx + 1) * user_data_len]),
+            user_subset,
             batch_size=args.train_batch_size, shuffle=True),
             'model': copy.deepcopy(global_model)}
+
         user['opt'] = optim.SGD(user['model'].parameters(), lr=args.lr,
                                 momentum=args.momentum, weight_decay=args.weight_decay) if args.optimizer == 'sgd' \
             else optim.Adam(user['model'].parameters(), lr=args.lr)
         user['scheduler'] = optim.lr_scheduler.LambdaLR(user['opt'], lr_lambda=lambda_func)
         local_models[user_idx] = user
+
     return local_models
-
-
 def distribute_model(local_models, global_model):
     for user_idx in range(len(local_models)):
         local_models[user_idx]['model'].load_state_dict(global_model.state_dict())
