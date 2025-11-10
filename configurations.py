@@ -104,6 +104,8 @@ def args_parser():
                         help="sgd variance weight")
     parser.add_argument('--maxR', type=float, default=8192,
                         help="sgd variance weight")
+    parser.add_argument('--maxB', type=float, default=1,
+                        help="Max communication time B_u")
     parser.add_argument('--dirichlet_alpha', type=float, default=None,
                         help="concentration parameter for dirichlet non-iid split (default: None for IID)")
 

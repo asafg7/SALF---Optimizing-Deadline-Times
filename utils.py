@@ -66,22 +66,17 @@ def dirichlet_split_non_iid(dataset, alpha, n_clients):
 
     return client_indices
 
-def federated_setup(global_model, train_data, args):
+def federated_setup(global_model, train_data, args, train_batch_size):
     # create a dict of dict s (local users), i.e. {'1': {'data':..., 'model':..., 'opt':...}, ...}
 
     if args.dirichlet_alpha is not None:
-        # Use the new non-IID Dirichlet split
         if args.num_samples is not None:
-            # We raise an error because the dirichlet split uses all data
-            # and partitioning it in a non-IID way AND THEN taking a fixed
-            # number of samples per client is ambiguous and usually not desired.
             raise ValueError("Cannot use --dirichlet_alpha and --num_samples together. "
                              "The Dirichlet split partitions all available data.")
 
         client_indices = dirichlet_split_non_iid(train_data, args.dirichlet_alpha, args.num_users)
 
     else:
-        # Original IID split logic
         print("Generating IID split...")
         indexes = torch.randperm(len(train_data))
         user_data_len = math.floor(len(train_data) / args.num_users) if args.num_samples == None else args.num_samples
@@ -91,7 +86,6 @@ def federated_setup(global_model, train_data, args):
             end = (user_idx + 1) * user_data_len
             client_indices.append(indexes[start:end])
 
-    # --- The rest of the function remains the same, but uses client_indices ---
 
     local_models = {}
     if args.lr_decay == "fixed":
@@ -104,14 +98,13 @@ def federated_setup(global_model, train_data, args):
 
         if len(user_indices) == 0:
             print(f"Warning: Client {user_idx} has 0 samples. This can happen with extreme non-IID (low alpha).")
-            # Create an empty dataloader if you want to skip, or handle as needed
             user_subset = torch.utils.data.Subset(train_data, [])
         else:
             user_subset = torch.utils.data.Subset(train_data, user_indices)
 
         user = {'data': torch.utils.data.DataLoader(
             user_subset,
-            batch_size=args.train_batch_size, shuffle=True),
+            batch_size=round(train_batch_size[user_idx]), shuffle=True),
             'model': copy.deepcopy(global_model)}
 
         user['opt'] = optim.SGD(user['model'].parameters(), lr=args.lr,

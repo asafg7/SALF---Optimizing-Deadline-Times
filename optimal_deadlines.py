@@ -33,7 +33,7 @@ def opt_function_deadlines(t, etta, g, u, l, rho_c, b, d1):
     return f
 
 def opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u,
-                                     gamma, rho_s, d1, alpha, N_samples, orig_batch_size, R_u):
+                                     gamma, rho_s, d1, alpha, N_samples, orig_batch_size, P_u):
 
     """ optimization function for layered federated learning
     Inputs:
@@ -50,7 +50,7 @@ def opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u,
     alpha - weight of the sgd variance (1x1)
     N_samples - training samples count (1x1)
     orig_batch_size - original batch size (1x1)
-    R_u computational capabilities (1xU)
+    P_u computational capabilities (1xU)
     """
 
     num_iter = np.size(x) - 1
@@ -64,7 +64,7 @@ def opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u,
         var_val[i-1, :] = (1+p_val)/(1-2*p_val)
     p_sum = np.sum(var_val, 0)
     c_t = (g**2)*(4*u)/(u-1)*p_sum
-    b_t = (1 / (u**2 * m)) * np.sum(np.divide(sigma_u ** 2, R_u)) + 6 * rho_s * gamma
+    b_t = (1 / (u**2 * m)) * np.sum(np.divide(sigma_u ** 2, P_u)) + 6 * rho_s * gamma
     for i in range(num_iter):
         ex_mult[i] = (etta[i] ** 2)*np.prod(1-rho_c*etta[i+1:])
     f = 1e3 * (np.prod(1-rho_c*etta)*d1 + np.sum(ex_mult*(alpha*b_t+c_t)))
@@ -98,7 +98,7 @@ def get_optimal_deadlines(u, l, num_iter, t_max, g, rho_s, rho_c, gamma, t_min, 
     return t_opt
 
 def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c,
-                                    gamma, t_min, mean_std, etta, alpha, N_samples, orig_batch_size, R_u):
+                                    gamma, t_min, mean_std, etta, alpha, N_samples, orig_batch_size, P_u):
 
     t0 = np.ones(num_iter) * (t_max / num_iter)
     d1 = np.sum(t0 ** 2) / 1e6
@@ -112,13 +112,13 @@ def get_optimal_deadlines_batchsize(u, l, num_iter, t_max, g, rho_s, rho_c,
     x0 = np.append(t0, m0)
 
     trivial_val = opt_function_deadlines_batchsize(x0, etta, g, u, l, rho_c, sigma_u, gamma,
-                                                   rho_s, d1, alpha, N_samples, orig_batch_size, R_u)
+                                                   rho_s, d1, alpha, N_samples, orig_batch_size, P_u)
     res = opt.minimize(opt_function_deadlines_batchsize, x0, method='trust-constr', jac="2-point", hess=SR1(),
                        constraints=lin_const, options={'verbose': 1}, bounds=bounds,
-                       args=(etta, g, u, l, rho_c, sigma_u, gamma, rho_s, d1, alpha, N_samples, orig_batch_size, R_u))
+                       args=(etta, g, u, l, rho_c, sigma_u, gamma, rho_s, d1, alpha, N_samples, orig_batch_size, P_u))
     x = res.x
     optimal_val = opt_function_deadlines_batchsize(x, etta, g, u, l, rho_c, sigma_u,
-                                                   gamma, rho_s, d1, alpha, N_samples, orig_batch_size, R_u)
+                                                   gamma, rho_s, d1, alpha, N_samples, orig_batch_size, P_u)
 
     t_opt = x[:-1]
     m_opt = x[-1]

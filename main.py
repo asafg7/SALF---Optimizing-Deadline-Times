@@ -29,7 +29,8 @@ if __name__ == '__main__':
 
     num_layers, layer_to_stop_arr = utils.get_layers(args.model)
     N_samples = utils.get_samples_count(args.data)
-    R_u = np.random.uniform(low=0.0, high=args.maxR, size=args.num_users)
+    P_u = np.random.uniform(low=0.0, high=args.maxR, size=args.num_users)
+    B_u = np.random.uniform(low=0.0, high=args.maxB, size=args.num_users)
 
     if args.deadline_times == "uniform" or args.eval:
         iteration_times = np.ones(args.global_epochs)*args.t_max/args.global_epochs
@@ -48,13 +49,15 @@ if __name__ == '__main__':
             iteration_times, m_factor = get_optimal_deadlines_batchsize(args.num_users, num_layers, args.global_epochs,
                                                               args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
                                                               args.t_min, args.mean_std, etta, args.alpha, N_samples,
-                                                                        args.train_batch_size, R_u)
+                                                                        args.train_batch_size, P_u)
         else:
             iteration_times = get_optimal_deadlines(args.num_users, num_layers, args.global_epochs,
                                                               args.t_max, args.g, args.rho_s, args.rho_c, args.gamma,
-                                                              args.t_min, etta, R_u)
+                                                              args.t_min, etta, P_u)
             m_factor = 1
-    args.train_batch_size = round(m_factor * args.train_batch_size)
+    time_factor = (iteration_times[0] - B_u) / iteration_times[0]
+    time_factor = np.maximum(0, time_factor)  # Ensure no negative batch sizes
+    train_batch_size = np.round(m_factor * P_u * time_factor).astype(int)
     np.save(f'checkpoints/{args.exp_name}/iteration_times.npy', iteration_times)
 
     N_iterations = args.monte_carlo_iterations
@@ -88,7 +91,7 @@ if __name__ == '__main__':
             gc.collect()
             sys.exit()
 
-        local_models = utils.federated_setup(global_model, train_data, args)
+        local_models = utils.federated_setup(global_model, train_data, args, train_batch_size)
 
         # stragglers
         num_of_layers = global_model.state_dict().keys().__len__()
